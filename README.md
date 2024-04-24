@@ -13,6 +13,13 @@ related to assignments throughout the class.
 
 Hope that this read me was helpful and that you enjoy the layout of the repo!
 
+~~_~_~_~_~_~ HANDY CARGO COMMANDS _~_~_~_~_~_~~
+cargo watch -q -c -w src/ -x run (Will watch main.rs for changes and run again when changes are made)
+
+
+
+
+
 ~~_~_~_~_~_~ HANDY GIT COMMANDS _~_~_~_~_~_~~
 
 -When working with branches-
