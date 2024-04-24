@@ -1,6 +1,23 @@
 use crate::*;
 
 
+pub enum JokeBaseErr {
+    JokeExists(String),
+    JokeBaseIoError(String),
+    NoJoke,
+    JokeDoesNotExist(String),
+    JokeUnprocessable(String),
+}
+impl From<std::io::Error> for JokeBaseErr {
+    fn from(e: std::io::Error) -> Self {
+        JokeBaseError::JokeBaseIoError(e.to_string())
+    }
+}
+#[derive(Debug)]
+pub struct JokeBaseError {
+    pub status: StatusCode,
+    pub error: JokeBaseErr,
+}
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Joke {
     pub id: JokeId,
