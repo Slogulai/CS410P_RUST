@@ -27,9 +27,7 @@ use axum::{
 
 #[tokio::main]
 async fn main() {
-    
-     
-    let ip = SocketAddr::new([127,0,0,1].into(), 3000);
+    let ip = SocketAddr::new([127, 0, 0, 1].into(), 3000);
     let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
     tracing::debug!("serving {}", listener.local_addr().unwrap());
     axum::serve(listener, web::app()).await.unwrap();
