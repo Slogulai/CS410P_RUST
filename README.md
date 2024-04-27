@@ -6,6 +6,13 @@ sloggett@pdx.edu
 
 This Repo will include all the work and assignments done by Christopher Sloggett
 
+FOR SAM OR BART!!!
+
+rust-web-axum is where the term project is located. As of 4/26/24, the program is no
+where near complete and will be completed around Sunday the 28th. I have emailed Bart
+about this and will email again once I have completed the REST submission. I am using
+the two days provided on the late assignments sections of the syllabus. 
+
 This Repo has all the main directories that will be used to access assignments
 from the class CS410 Rust Web Development. All directories will be named 
 appropriately so as the professor or TA can easily find all of the pertinent files
