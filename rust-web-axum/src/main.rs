@@ -11,19 +11,28 @@ use axum::{
 };
 
 #[allow(unused)]
-use::serde::Serialize;
+use chrono::prelude::*;
+use::serde::{Serialize, Deserialize};
 use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 use std::fmt;
+#[allow(unused)]
+use tokio::sync::Mutex;
+#[allow(unused)]
+use std::sync::Arc;
 
-#[derive(Debug)]
-struct Question {
+
+
+//~~~~~~QUESTIONS STUFF~~~~~~~~
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Question {
     id : QuestionId,
     title : String,
     content : String,
     tags : Option<Vec<String>>,
 }
-struct QuestionId(String);
+#[derive(Deserialize, Serialize, Clone)]
+pub struct QuestionId(String);
 impl FromStr for QuestionId {
     type Err = Error;
     fn from_str(id: &str) -> Result<Self, Self::Err> {
@@ -52,6 +61,11 @@ impl Question {
     }
     */
 }
+impl std::fmt::Debug for QuestionId {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
 impl fmt::Display for Question {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}\n{}\n{}\n{:?}", self.id.0, self.title, self.content, self.tags)
@@ -62,11 +76,25 @@ impl std::fmt::Display for QuestionId {
         write!(f, "{}", self.0)
     }
 }
-impl std::fmt::Debug for QuestionId {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:?}", self.0)
-    }
+
+//#[allow(unused)]
+pub type DB = Arc<Mutex<Vec<Question>>>;
+pub fn question_db() -> DB {
+    Arc::new(Mutex::new(Vec::new()))
 }
+#[derive(Debug, Deserialize, Serialize)]
+pub struct QueryOptions {
+    pub page: Option<usize>,
+    pub limit: Option<usize>,
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct UpdateQuestionSchema {
+    pub title: Option<String>,
+    pub content: Option<String>,
+    pub tags: Option<Vec<String>>,
+}
+//~~~~~ASYNC STUFF~~~~~~
+
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 async fn health_check() -> impl IntoResponse {
     const MESSAGE: &str = "I'm alive!";
