@@ -77,6 +77,11 @@ impl std::fmt::Display for QuestionId {
     }
 }
 
+
+
+//~~~~~~DB STUFF~~~~~~~~
+//https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
+
 //#[allow(unused)]
 pub type DB = Arc<Mutex<Vec<Question>>>;
 pub fn question_db() -> DB {
@@ -93,6 +98,9 @@ pub struct UpdateQuestionSchema {
     pub content: Option<String>,
     pub tags: Option<Vec<String>>,
 }
+
+
+
 //~~~~~ASYNC STUFF~~~~~~
 
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
