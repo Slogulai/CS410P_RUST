@@ -1,10 +1,10 @@
+/*
 mod api;
-mod joke;
+mod question;
 mod jokebase;
 mod web;
 
 use std::net::SocketAddr;
-/*
 use api::*;
 use joke::*;
 use jokebase::*;
@@ -23,7 +23,6 @@ use axum::{
     routing::{delete, get, post, put},
     Json, Router,
 };
-*/
 
 #[tokio::main]
 async fn main() {
@@ -31,4 +30,77 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
     tracing::debug!("serving {}", listener.local_addr().unwrap());
     axum::serve(listener, web::app()).await.unwrap();
+}
+*/
+
+use std::io::{Error, ErrorKind};
+use std::str::FromStr;
+use std::fmt;
+
+#[derive(Debug)]
+struct Question {
+    id : QuestionId,
+    title : String,
+    content : String,
+    tags : Option<Vec<String>>,
+}
+
+//#[derive(Debug)]
+struct QuestionId(String);
+
+impl FromStr for QuestionId {
+    type Err = Error;
+    fn from_str(id: &str) -> Result<Self, Self::Err> {
+        match id.is_empty() {
+            false => Ok(QuestionId(id.to_string())),
+            true => Err(
+                Error::new(ErrorKind::InvalidInput, "No ID provided!")
+        ),
+        }
+    }
+}
+
+impl Question {
+    fn new(id: QuestionId, title: String, content: String, tags: Option<Vec<String>>) -> Self {
+        Self {
+            id,
+            title,
+            content,
+            tags,
+        }
+    }
+    /*
+    //Rust isnt liking this function
+    fn update_title(&self, new_title: String) -> Self {
+        Question::new(self.id, new_title, self.content, self.tags)
+    }
+    */
+}
+impl fmt::Display for Question {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}\n{}\n{}\n{:?}", self.id.0, self.title, self.content, self.tags)
+    }
+}
+
+impl std::fmt::Display for QuestionId {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::fmt::Debug for QuestionId {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+fn main()
+{
+    let question = Question::new(
+        QuestionId::from_str("1").expect("No ID provided!"),
+        "What is the meaning of life?".to_string(),
+        "I am curious about the meaning of life. Can you help me?".to_string(),
+        Some(vec!["philosophy".to_string(), "life".to_string()]),
+    );
+    println!("{}", question);
 }
