@@ -177,6 +177,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 
 [[package]]
+name = "cors"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d2dacfa7c8e6a88bacdbd500047e86ac32f67a3706d5b55a1d7b36c80efbc2f"
+
+[[package]]
 name = "externref_polyfill"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -587,11 +593,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "route"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76b77602a5a0b6c0739fd6f14d5c59ab900a596a0f6c4a9ecc9e4acd0c92b296"
+
+[[package]]
 name = "rust-web-axum"
 version = "0.1.0"
 dependencies = [
  "axum",
  "chrono",
+ "cors",
+ "route",
  "serde",
  "serde_json",
  "tokio",
