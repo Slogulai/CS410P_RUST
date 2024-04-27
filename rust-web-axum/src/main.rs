@@ -1,25 +1,5 @@
-/*
-mod api;
-mod question;
-mod jokebase;
-mod web;
-
-use api::*;
-use joke::*;
-use jokebase::*;
-use web::*;
-
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::{ErrorKind, Seek, Write};
-use std::sync::Arc;
-
-};
-
-*/
 #[allow(unused)]
 use std::net::SocketAddr;
-//use askama::Template;
 #[allow(unused)]
 use axum::{
     extract::{Path, State},
@@ -29,9 +9,6 @@ use axum::{
     error_handling::HandleError,
    // Json, Router,
 };
-/*
-use axum::{response::IntoResponse, routing::get, Router, Json};
-*/
 
 #[allow(unused)]
 use::serde::Serialize;
@@ -39,7 +16,6 @@ use std::io::{Error, ErrorKind};
 use std::str::FromStr;
 use std::fmt;
 
-//#[derive(Serialize)]
 #[derive(Debug)]
 struct Question {
     id : QuestionId,
@@ -112,46 +88,3 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
-
-/*
-#[tokio::main]
-async fn main() {
-    tracing_subscriber::fmt::init();
-
-    let app = Router::new()
-        .route("/", get(root))
-        .route("/users", post(create_user));
-
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await().unwrap();
-    axum::serve(listener, app).await.unwrap();
-}
-
-async fn root() -> &'static str {
-    "hello, world!"
-}
-
-async fn create_use(json(payload): Json<CreateUser>,) -> (StatusCode, Json<User>) {
-    let user = User {
-        id: 1337,
-
-    }
-}
-#[tokio::main]
-async fn main() {
-    let ip = SocketAddr::new([127, 0, 0, 1].into(), 3000);
-    let listener = tokio::net::TcpListener::bind(ip).await.unwrap();
-
-    tracing::debug!("serving {}", listener.local_addr().unwrap());
-    axum::serve(listener, web::app()).await.unwrap();
-}
-fn main()
-{
-    let question = Question::new(
-        QuestionId::from_str("1").expect("No ID provided!"),
-        "What is the meaning of life?".to_string(),
-        "I am curious about the meaning of life. Can you help me?".to_string(),
-        Some(vec!["philosophy".to_string(), "life".to_string()]),
-    );
-    println!("{}", question);
-}
-*/
