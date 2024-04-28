@@ -54,14 +54,8 @@ impl fmt::Display for Question {
         write!(
             f,
             "{}\n{}\n{}\n{:?}",
-            self.id.0, self.title, self.content, self.tags
+            self.id, self.title, self.content, self.tags
         )
-    }
-}
-
-impl std::fmt::Display for QuestionId {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.0)
     }
 }
 

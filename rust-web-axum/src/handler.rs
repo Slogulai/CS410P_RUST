@@ -1,6 +1,7 @@
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 
 
+#[allow(unused)]
 use std::error;
 
 #[allow(unused)]
@@ -87,7 +88,7 @@ pub async fn create_question_handler (
 
     let json_response = SingleQuestionResponse {
         status: "success".to_string(),
-        data: QuestionData {question},
+        data: question,
     };
 
 
@@ -101,7 +102,7 @@ pub async fn get_question_handler(
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let vec = db.lock().await;
 
-    if let Some(question) = vec.iter().find(|question| question.id == db.id) {
+    if let Some(question) = vec.iter().find(|question| question.id == id) {
         let json_response = SingleQuestionResponse {
             status: "success".to_string(),
             data: question.clone(),
@@ -118,14 +119,51 @@ pub async fn get_question_handler(
 }
 
 pub async fn edit_question_handler(
+    Path(id): Path<String>,
+    State(db): State<DB>,
+    Json(body): Json<UpdateQuestionSchema>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>{
+    let id = id.to_string();
+    let mut vec = db.lock().await;
 
-) {
+    if let Some(question) = vec.iter_mut().find(|question| Some(question.id.clone()) == Some(id.clone())) {
+        question.title = body.title.clone().unwrap();
+        question.content = body.content.clone().unwrap();
+        question.tags = body.tags.clone();
 
+        let json_response = SingleQuestionResponse {
+            status: "success".to_string(),
+            data: question.clone(),
+        };
+
+        return Ok((StatusCode::OK, Json(json_response)));
+    }
+
+    let error_response = serde_json::json!({
+        "status": "error",
+        "message": format!("Question with ID {} not found", id),
+    });
+
+    Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
 pub async fn delete_question_handler(
+    Path(id): Path<String>,
+    State(db): State<DB>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let id = id.to_string();
+    let mut vec = db.lock().await;
 
-) {
+    if let Some(pos) = vec.iter().position(|question| Some(question.id.clone()) == Some(id.clone())) {
+        vec.remove(pos);
+        return Ok((StatusCode::NO_CONTENT, Json(serde_json::json!({}))));
+    }
 
+    let error_response = serde_json::json!({
+        "status": "error",
+        "message": format!("Question with ID {} not found", id),
+    });
+
+    Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
