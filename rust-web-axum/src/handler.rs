@@ -1,6 +1,8 @@
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 
 
+use std::error;
+
 #[allow(unused)]
 use crate::*;
 
@@ -18,7 +20,7 @@ use uuid::Uuid;
 
 #[allow(unused)]
 use crate::{
-    question::{QueryOptions, Question, UpdateQuestionSchema, DB, QuestionId},
+    question::{QueryOptions, Question, UpdateQuestionSchema, DB},
     response::{QuestionListResponse, QuestionData, SingleQuestionResponse},
 };
 
@@ -85,7 +87,7 @@ pub async fn create_question_handler (
 
     let json_response = SingleQuestionResponse {
         status: "success".to_string(),
-        data: question,
+        data: QuestionData {question},
     };
 
 
@@ -94,9 +96,25 @@ pub async fn create_question_handler (
 }
 
 pub async fn get_question_handler(
+    Path(id): Path<String>,
+    State(db): State<DB>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let vec = db.lock().await;
 
-) {
+    if let Some(question) = vec.iter().find(|question| question.id == db.id) {
+        let json_response = SingleQuestionResponse {
+            status: "success".to_string(),
+            data: question.clone(),
+        };
+        return Ok((StatusCode::OK, Json(json_response)));
+    }
 
+    let error_response = serde_json::json!({
+        "status": "error",
+        "message": format!("Question with ID {} not found", id),
+    });
+
+    Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
 pub async fn edit_question_handler(

@@ -3,12 +3,12 @@ use crate::*;
 //~~~~~~QUESTIONS STUFF~~~~~~~~
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Question {
-    pub id: QuestionId,
+    pub id: String,
     pub title: String,
     pub content: String,
     pub tags: Option<Vec<String>>,
 }
-
+/*
 #[derive(Deserialize, Serialize, Clone)]
 pub struct QuestionId(String);
 impl FromStr for QuestionId {
@@ -25,10 +25,11 @@ impl std::fmt::Debug for QuestionId {
         write!(f, "{:?}", self.0)
     }
 }
+*/
 
 #[allow(unused)]
 impl Question {
-    pub fn new(id: QuestionId, title: String, content: String, tags: Option<Vec<String>>) -> Self {
+    pub fn new(id: String, title: String, content: String, tags: Option<Vec<String>>) -> Self {
         Self {
             id,
             title,
@@ -36,7 +37,7 @@ impl Question {
             tags,
         }
     }
-    pub fn unwrap(self) -> (QuestionId, String, String, Option<Vec<String>>) {
+    pub fn unwrap(self) -> (String, String, String, Option<Vec<String>>) {
         (self.id, self.title, self.content, self.tags)
     }
     /*
