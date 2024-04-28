@@ -1,4 +1,4 @@
-# Rust Web Example
+# Rust Web
 CS410p Rust Web Dev Repo
 
 Christopher Sloggett
