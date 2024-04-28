@@ -12,11 +12,13 @@ use axum::{
     Json,
 };
 #[allow(unused)]
+use serde_json::from_str;
+#[allow(unused)]
 use uuid::Uuid;
 
 #[allow(unused)]
 use crate::{
-    question::{QueryOptions, Question, UpdateQuestionSchema, DB},
+    question::{QueryOptions, Question, UpdateQuestionSchema, DB, QuestionId},
     response::{QuestionListResponse, QuestionData, SingleQuestionResponse},
 };
 
@@ -58,43 +60,37 @@ pub async fn question_list_handler(
     Json(json_response)
 }
 
-pub async fn create_question_handler ( /*
+pub async fn create_question_handler ( 
     State(db): State<DB>,
-    Json(mut body): Json<Question>, */ 
-) /*Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> */ {
-  /*  let mut vec = db.lock().await;
-
+    Json(body): Json<Question>,  
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>  {
+    let mut vec = db.lock().await;
 
     if let Some(question) = vec.iter().find(|question| question.title == body.title) {
         let error_response = serde_json::json!({
             "status": "error",
-            "message": format!("Question with ID {} already exists", body.title),
+            "message": format!("Question with ID {} already exists", question.title),
         });
         return Err((StatusCode::CONFLICT, Json(error_response)));
     }
 
-    let id = Uuid::new_v4();
+    let id = body.id.clone();
     let title = body.title.clone();
     let content = body.content.clone();
-    let tags = body.tags.clone().unwrap();
-
-    body.id = Some(id.to_string());
-    body.title = Some(title);
-    body.content = Some(content);
-    body.tags = Some(tags);
-
-    let question = body.to_owned();
+    let tags = body.tags.clone();
 
     vec.push(body);
 
+    let question = Question::new(id, title, content, tags);
+
     let json_response = SingleQuestionResponse {
         status: "success".to_string(),
-        data: QuestionData {question},
+        data: question,
     };
 
 
     Ok((StatusCode::CREATED, Json(json_response)))
-     */
+     
 }
 
 pub async fn get_question_handler(

@@ -20,16 +20,24 @@ impl FromStr for QuestionId {
         }
     }
 }
+impl std::fmt::Debug for QuestionId {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
 
 #[allow(unused)]
 impl Question {
-    fn new(id: QuestionId, title: String, content: String, tags: Option<Vec<String>>) -> Self {
+    pub fn new(id: QuestionId, title: String, content: String, tags: Option<Vec<String>>) -> Self {
         Self {
             id,
             title,
             content,
             tags,
         }
+    }
+    pub fn unwrap(self) -> (QuestionId, String, String, Option<Vec<String>>) {
+        (self.id, self.title, self.content, self.tags)
     }
     /*
     //Rust isnt liking this function
@@ -39,11 +47,6 @@ impl Question {
     */
 }
 
-impl std::fmt::Debug for QuestionId {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:?}", self.0)
-    }
-}
 
 impl fmt::Display for Question {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
