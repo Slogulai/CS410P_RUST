@@ -3,11 +3,12 @@ use crate::*;
 //~~~~~~QUESTIONS STUFF~~~~~~~~
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Question {
-    id: QuestionId,
-    title: String,
-    content: String,
-    tags: Option<Vec<String>>,
+    pub id: QuestionId,
+    pub title: String,
+    pub content: String,
+    pub tags: Option<Vec<String>>,
 }
+
 #[derive(Deserialize, Serialize, Clone)]
 pub struct QuestionId(String);
 impl FromStr for QuestionId {
@@ -19,6 +20,7 @@ impl FromStr for QuestionId {
         }
     }
 }
+
 #[allow(unused)]
 impl Question {
     fn new(id: QuestionId, title: String, content: String, tags: Option<Vec<String>>) -> Self {
@@ -36,11 +38,13 @@ impl Question {
     }
     */
 }
+
 impl std::fmt::Debug for QuestionId {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{:?}", self.0)
     }
 }
+
 impl fmt::Display for Question {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -50,6 +54,7 @@ impl fmt::Display for Question {
         )
     }
 }
+
 impl std::fmt::Display for QuestionId {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.0)
