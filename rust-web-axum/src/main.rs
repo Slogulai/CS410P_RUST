@@ -12,10 +12,10 @@ use question::*;
 #[allow(unused)]
 use route::*;
 
+extern crate headers;
 
 #[allow(unused)]
 use axum::{
-    // header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     http::{HeaderValue, Method},
     error_handling::HandleError,
     // Json, Router,
@@ -37,7 +37,9 @@ use tokio::sync::Mutex;
 use route::create_router;
 #[allow(unused)]
 use tower::{ServiceBuilder, ServiceExt, Service};
-use tower_http::cors::{Any, Corslayer};
+#[allow(unused)]
+use tower_http::cors::{Any, CorsLayer};
+use headers::*;
 
 //~~~~~ASYNC STUFF~~~~~~
 
@@ -46,11 +48,11 @@ use tower_http::cors::{Any, Corslayer};
 #[tokio::main]
 async fn main() {
     //let app = Router::new().route("/", get(health_check));
-    let cors = Corslayer::new()
-        .allow_any_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
+    let cors = CorsLayer::new()
+        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-        .allow_credentials(true);
-       // .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
+        .allow_credentials(true)
+        .allow_headers([HeaderName::from_lowercase(b"content-type").unwrap()]);
 
     let app = create_router().layer(cors);
 

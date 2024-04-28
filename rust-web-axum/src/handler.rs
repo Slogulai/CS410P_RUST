@@ -58,14 +58,14 @@ pub async fn question_list_handler(
     Json(json_response)
 }
 
-pub async fn create_question_handler (
+pub async fn create_question_handler ( /*
     State(db): State<DB>,
-    Json(mut body): Json<Question>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let mut vec = db.lock().await;
+    Json(mut body): Json<Question>, */ 
+) /*Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> */ {
+  /*  let mut vec = db.lock().await;
 
 
-    if let Some(question) = vec.iter().find(|question| question.id == body.id) {
+    if let Some(question) = vec.iter().find(|question| question.title == body.title) {
         let error_response = serde_json::json!({
             "status": "error",
             "message": format!("Question with ID {} already exists", body.title),
@@ -73,7 +73,12 @@ pub async fn create_question_handler (
         return Err((StatusCode::CONFLICT, Json(error_response)));
     }
 
-    body.id = Some(id);
+    let id = Uuid::new_v4();
+    let title = body.title.clone();
+    let content = body.content.clone();
+    let tags = body.tags.clone().unwrap();
+
+    body.id = Some(id.to_string());
     body.title = Some(title);
     body.content = Some(content);
     body.tags = Some(tags);
@@ -89,6 +94,7 @@ pub async fn create_question_handler (
 
 
     Ok((StatusCode::CREATED, Json(json_response)))
+     */
 }
 
 pub async fn get_question_handler(

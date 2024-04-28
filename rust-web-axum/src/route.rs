@@ -18,7 +18,7 @@ use crate::{
 pub fn create_router() -> Router {
     let db = question::question_db();
     Router::new()
-        .route("api/healthchecker", get(health_check))
+        .route("/api/healthchecker", get(health_check))
         .route("/api/questions", 
             post(create_question_handler).get(question_list_handler),
         )
