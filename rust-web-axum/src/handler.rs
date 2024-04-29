@@ -1,28 +1,22 @@
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 
 
-#[allow(unused)]
-use std::error;
+//use std::error;
+//use serde_json::from_str;
+//use uuid::Uuid;
 
-#[allow(unused)]
 use crate::*;
 
-#[allow(unused)]
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
     Json,
 };
-#[allow(unused)]
-use serde_json::from_str;
-#[allow(unused)]
-use uuid::Uuid;
 
-#[allow(unused)]
 use crate::{
     question::{QueryOptions, Question, UpdateQuestionSchema, DB},
-    response::{QuestionListResponse, QuestionData, SingleQuestionResponse},
+    response::{QuestionListResponse,/* QuestionData, */SingleQuestionResponse},
 };
 
 pub async fn health_check() -> impl IntoResponse {
@@ -36,7 +30,7 @@ pub async fn health_check() -> impl IntoResponse {
 
     Json(json_response)
 }
-#[allow(unused)]
+
 pub async fn question_list_handler(
     opts: Option<Query<QueryOptions>>,
     State(db): State<DB>,

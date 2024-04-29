@@ -29,13 +29,12 @@ use tokio::sync::Mutex;
 use std::collections::HashMap;
 use route::create_router;
 use tower_http::cors::CorsLayer;
+use ::serde::{Deserialize, Serialize};
 use headers::*;
 use std::fmt;
 
 #[allow(unused)]
 use std::io::{Error, ErrorKind};
-#[allow(unused)]
-use ::serde::{Deserialize, Serialize};
 #[allow(unused)]
 use std::fs::File;
 
@@ -46,7 +45,6 @@ use std::fs::File;
 //~~~~~ASYNC STUFF~~~~~~
 
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
-#[allow(unused)]
 #[tokio::main]
 async fn main() {
     //let app = Router::new().route("/", get(health_check));

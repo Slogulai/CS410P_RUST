@@ -8,26 +8,7 @@ pub struct Question {
     pub content: String,
     pub tags: Option<Vec<String>>,
 }
-/*
-#[derive(Deserialize, Serialize, Clone)]
-pub struct QuestionId(String);
-impl FromStr for QuestionId {
-    type Err = Error;
-    fn from_str(id: &str) -> Result<Self, Self::Err> {
-        match id.is_empty() {
-            false => Ok(QuestionId(id.to_string())),
-            true => Err(Error::new(ErrorKind::InvalidInput, "No ID provided!")),
-        }
-    }
-}
-impl std::fmt::Debug for QuestionId {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:?}", self.0)
-    }
-}
-*/
 
-#[allow(unused)]
 impl Question {
     pub fn new(id: String, title: String, content: String, tags: Option<Vec<String>>) -> Self {
         Self {
@@ -37,10 +18,10 @@ impl Question {
             tags,
         }
     }
+    /*
     pub fn unwrap(self) -> (String, String, String, Option<Vec<String>>) {
         (self.id, self.title, self.content, self.tags)
     }
-    /*
     //Rust isnt liking this function
     fn update_title(&self, new_title: String) -> Self {
         Question::new(self.id, new_title, self.content, self.tags)
@@ -62,9 +43,7 @@ impl fmt::Display for Question {
 //~~~~~~DB STUFF~~~~~~~~
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 
-//#[allow(unused)]
 pub type DB = Arc<Mutex<HashMap<String, Question>>>;
-#[allow(unused)]
 pub fn question_db() -> DB {
     Arc::new(Mutex::new(HashMap::new()))
 }
