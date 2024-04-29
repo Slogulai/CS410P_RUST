@@ -50,7 +50,7 @@ pub async fn get_question_handler(
             "status": "error",
             "message": format!("Failed to read file: {}", err),
         });
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)).into()
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
     })?;
     let mut contents = String::new();
     if let Err(err) = file.read_to_string(&mut contents) {
@@ -58,7 +58,7 @@ pub async fn get_question_handler(
             "status": "error",
             "message": format!("Failed to read file: {}", err),
         });
-        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)).into());
+        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
     }
     let questions: HashMap<String, Question> = serde_json::from_str(&contents).unwrap();
 
