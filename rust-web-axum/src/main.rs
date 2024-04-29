@@ -17,23 +17,26 @@ use questionbase::*;
 
 extern crate headers;
 
+#[allow(unused)]
 use axum::{
-    http::{HeaderValue, Method},
+    http::{HeaderValue, Method, StatusCode},
+    response::{IntoResponse, Json},
+    //routing::Rejection,
     //error_handling::HandleError,
     // Json, Router,
     //extract::{Path, State},
-    //http::StatusCode,
-    //response::{IntoResponse, Json},
     //routing::{delete, get, post, put, Router},
 };
+use std::fmt;
+#[allow(unused)]
+use std::convert::Infallible;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use std::collections::HashMap;
+use tokio::sync::Mutex;
 use route::create_router;
 use tower_http::cors::CorsLayer;
 use ::serde::{Deserialize, Serialize};
 use headers::*;
-use std::fmt;
 
 #[allow(unused)]
 use std::io::{Error, ErrorKind};
@@ -50,7 +53,7 @@ use std::fs::File;
 #[tokio::main]
 async fn main() {
     let store = Store::new();
-    let _db = Arc::new(Mutex::new(store.question_map));
+    let _db = Arc::new(Mutex::new(store.question_map.clone()));
 
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())

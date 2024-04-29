@@ -10,8 +10,10 @@ use crate::{
         get_question_handler,
         health_check,
         question_list_handler,
+        //get_questions,
     },
     question,
+    //handler, // Import the handler module
 };
 pub fn create_router() -> Router {
     let db = question::question_db();
@@ -25,5 +27,7 @@ pub fn create_router() -> Router {
             .patch(edit_question_handler)
             .delete(delete_question_handler),
         )
+        .route("/questions_data", get(get_question_handler))
+        //.route("/questions_data", get(handler::get(get_questions))) // Fix: Wrap get_questions in handler::get
         .with_state(db)
 }

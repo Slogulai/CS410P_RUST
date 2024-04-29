@@ -10,9 +10,13 @@ use crate::*;
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
+    //routing::get,
     response::IntoResponse,
     Json,
 };
+use anyhow::Error as BoxError;
+use std::fs::File;
+use std::io::Read;
 
 use crate::{
     question::{QueryOptions, Question, UpdateQuestionSchema, DB},
@@ -31,16 +35,37 @@ pub async fn health_check() -> impl IntoResponse {
     Json(json_response)
 }
 
+#[allow(unused)]
+pub async fn get_questions(store: Store) -> Result<Vec<Question>, BoxError> {
+    let res: Vec<Question> = store.question_map.values().cloned().collect();
+    Ok(res)
+}
+
 pub async fn get_question_handler(
     Path(id): Path<String>,
-    State(db): State<DB>,
+    State(_db): State<DB>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let hash_map = db.lock().await;
+    let mut file = File::open("questions.json").map_err(|err| {
+        let error_response = serde_json::json!({
+            "status": "error",
+            "message": format!("Failed to read file: {}", err),
+        });
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)).into()
+    })?;
+    let mut contents = String::new();
+    if let Err(err) = file.read_to_string(&mut contents) {
+        let error_response = serde_json::json!({
+            "status": "error",
+            "message": format!("Failed to read file: {}", err),
+        });
+        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)).into());
+    }
+    let questions: HashMap<String, Question> = serde_json::from_str(&contents).unwrap();
 
-    if let Some(question) = hash_map.iter().find(|question| question.1.id == id) {
+    if let Some(question) = questions.get(&id) {
         let json_response = SingleQuestionResponse {
             status: "success".to_string(),
-            data: question.1.clone(),
+            data: question.clone(),
         };
         return Ok((StatusCode::OK, Json(json_response)));
     }

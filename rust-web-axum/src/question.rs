@@ -1,3 +1,4 @@
+//use anyhow::Error as BoxError;
 
 use crate::*;
 //~~~~~~QUESTIONS STUFF~~~~~~~~
@@ -8,7 +9,16 @@ pub struct Question {
     pub content: String,
     pub tags: Option<Vec<String>>,
 }
-
+/*
+async fn return_error(r: Rejection) -> Result<impl IntoResponse, Infallible> {
+    let (code, message) = if r.is_not_found() {
+        (StatusCode::NOT_FOUND, "Not Found")
+    } else {
+        (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error")
+    };
+    Ok((code, message).into_response())
+}
+*/
 impl Question {
     pub fn new(id: String, title: String, content: String, tags: Option<Vec<String>>) -> Self {
         Self {
