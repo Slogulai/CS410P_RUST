@@ -48,11 +48,12 @@ pub async fn question_list_handler(
     let limit = opts.limit.unwrap_or(10);
     let offset = (opts.page.unwrap_or(1) - 1) * limit;
 
-    let questions: Vec<Question> = questions
+    let questions: HashMap<String, Question> = questions
         .clone()
         .into_iter()
         .skip(offset)
         .take(limit)
+        .map(|(key, value)| (key.to_string(), value))
         .collect();
     let json_response = QuestionListResponse {
         status: "success".to_string(),
@@ -67,12 +68,12 @@ pub async fn create_question_handler (
     State(db): State<DB>,
     Json(body): Json<Question>,  
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>  {
-    let mut vec = db.lock().await;
+    let mut question = db.lock().await;
 
-    if let Some(question) = vec.iter().find(|question| question.title == body.title) {
+    if let Some(question) = question.iter().find(|question| question.1.title == body.title) {
         let error_response = serde_json::json!({
             "status": "error",
-            "message": format!("Question with ID {} already exists", question.title),
+            "message": format!("Question with ID {} already exists", question.1.title),
         });
         return Err((StatusCode::CONFLICT, Json(error_response)));
     }
@@ -82,7 +83,7 @@ pub async fn create_question_handler (
     let content = body.content.clone();
     let tags = body.tags.clone();
 
-    vec.push(body);
+    question.insert(body.id.to_string(), body);
 
     let question = Question::new(id, title, content, tags);
 
@@ -100,12 +101,12 @@ pub async fn get_question_handler(
     Path(id): Path<String>,
     State(db): State<DB>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let vec = db.lock().await;
+    let hash_map = db.lock().await;
 
-    if let Some(question) = vec.iter().find(|question| question.id == id) {
+    if let Some(question) = hash_map.iter().find(|question| question.1.id == id) {
         let json_response = SingleQuestionResponse {
             status: "success".to_string(),
-            data: question.clone(),
+            data: question.1.clone(),
         };
         return Ok((StatusCode::OK, Json(json_response)));
     }
@@ -124,16 +125,16 @@ pub async fn edit_question_handler(
     Json(body): Json<UpdateQuestionSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>{
     let id = id.to_string();
-    let mut vec = db.lock().await;
+    let mut hash_map = db.lock().await;
 
-    if let Some(question) = vec.iter_mut().find(|question| Some(question.id.clone()) == Some(id.clone())) {
-        question.title = body.title.clone().unwrap();
-        question.content = body.content.clone().unwrap();
-        question.tags = body.tags.clone();
+    if let Some(question) = hash_map.iter_mut().find(|question| Some(question.1.id.clone()) == Some(id.clone())) {
+        question.1.title = body.title.clone().unwrap();
+        question.1.content = body.content.clone().unwrap();
+        question.1.tags = body.tags.clone();
 
         let json_response = SingleQuestionResponse {
             status: "success".to_string(),
-            data: question.clone(),
+            data: question.1.clone(),
         };
 
         return Ok((StatusCode::OK, Json(json_response)));
@@ -152,10 +153,10 @@ pub async fn delete_question_handler(
     State(db): State<DB>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let id = id.to_string();
-    let mut vec = db.lock().await;
+    let mut hash_map = db.lock().await;
 
-    if let Some(pos) = vec.iter().position(|question| Some(question.id.clone()) == Some(id.clone())) {
-        vec.remove(pos);
+    if hash_map.iter().any(|question| Some(question.1.id.clone()) == Some(id.clone())) {
+        hash_map.remove_entry(&id);
         return Ok((StatusCode::NO_CONTENT, Json(serde_json::json!({}))));
     }
 

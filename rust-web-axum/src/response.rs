@@ -24,5 +24,5 @@ pub struct SingleQuestionResponse {
 pub struct QuestionListResponse {
     pub status: String,
     pub results: usize,
-    pub questions: Vec<Question>,
+    pub questions: HashMap<String, Question>,
 }

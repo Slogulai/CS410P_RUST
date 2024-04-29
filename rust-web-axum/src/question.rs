@@ -63,10 +63,10 @@ impl fmt::Display for Question {
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 
 //#[allow(unused)]
-pub type DB = Arc<Mutex<Vec<Question>>>;
+pub type DB = Arc<Mutex<HashMap<String, Question>>>;
 #[allow(unused)]
 pub fn question_db() -> DB {
-    Arc::new(Mutex::new(Vec::new()))
+    Arc::new(Mutex::new(HashMap::new()))
 }
 #[derive(Debug, Deserialize, Default)]
 pub struct QueryOptions {
