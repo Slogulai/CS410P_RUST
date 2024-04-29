@@ -47,7 +47,13 @@ use std::fs::File;
 //use tower::{ServiceBuilder, ServiceExt, Service};
 //use std::net::SocketAddr;
 
-//~~~~~ASYNC STUFF~~~~~~
+//~~~~~~Thingies to Remember~~~~~~
+//Persistant store
+//random questions
+//adding questions
+//updating questions
+//database integration
+
 
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
