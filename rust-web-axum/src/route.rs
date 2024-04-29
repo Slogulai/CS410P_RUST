@@ -2,7 +2,6 @@ use axum::{
     routing::{get, post},
     Router,
 };
-#[allow(unused)]
 use crate::{
     handler::{
         create_question_handler, 
@@ -13,16 +12,15 @@ use crate::{
         question_list_handler,
     },
     question,
-    *,
 };
 pub fn create_router() -> Router {
     let db = question::question_db();
     Router::new()
-        .route("/api/healthchecker", get(health_check))
-        .route("/api/questions", 
+        .route("/healthchecker", get(health_check))
+        .route("/questions", 
             post(create_question_handler).get(question_list_handler),
         )
-        .route("/api/questions/:id", 
+        .route("/questions/:id", 
             get(get_question_handler)
             .patch(edit_question_handler)
             .delete(delete_question_handler),
