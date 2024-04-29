@@ -12,6 +12,8 @@ use response::*;
 use question::*;
 #[allow(unused)]
 use route::*;
+#[allow(unused)]
+use questionbase::*;
 
 extern crate headers;
 
@@ -47,7 +49,9 @@ use std::fs::File;
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
 async fn main() {
-    //let app = Router::new().route("/", get(health_check));
+    let store = Store::new();
+    let _db = Arc::new(Mutex::new(store.question_map));
+
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])

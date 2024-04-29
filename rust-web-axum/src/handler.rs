@@ -31,6 +31,28 @@ pub async fn health_check() -> impl IntoResponse {
     Json(json_response)
 }
 
+pub async fn get_question_handler(
+    Path(id): Path<String>,
+    State(db): State<DB>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let hash_map = db.lock().await;
+
+    if let Some(question) = hash_map.iter().find(|question| question.1.id == id) {
+        let json_response = SingleQuestionResponse {
+            status: "success".to_string(),
+            data: question.1.clone(),
+        };
+        return Ok((StatusCode::OK, Json(json_response)));
+    }
+
+    let error_response = serde_json::json!({
+        "status": "error",
+        "message": format!("Question with ID {} not found", id),
+    });
+
+    Err((StatusCode::NOT_FOUND, Json(error_response)))
+}
+
 pub async fn question_list_handler(
     opts: Option<Query<QueryOptions>>,
     State(db): State<DB>,
@@ -89,28 +111,6 @@ pub async fn create_question_handler (
 
     Ok((StatusCode::CREATED, Json(json_response)))
      
-}
-
-pub async fn get_question_handler(
-    Path(id): Path<String>,
-    State(db): State<DB>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let hash_map = db.lock().await;
-
-    if let Some(question) = hash_map.iter().find(|question| question.1.id == id) {
-        let json_response = SingleQuestionResponse {
-            status: "success".to_string(),
-            data: question.1.clone(),
-        };
-        return Ok((StatusCode::OK, Json(json_response)));
-    }
-
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", id),
-    });
-
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
 pub async fn edit_question_handler(
