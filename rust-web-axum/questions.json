@@ -1,8 +1,8 @@
 {
     "1" : {
         "id" : "1",
-        "title" : "How?",
-        "content" : "Please help!",
+        "title" : "Does a bear poop in the woods?",
+        "content" : "Nobody knows!",
         "tags" : ["general"]
     }
 }

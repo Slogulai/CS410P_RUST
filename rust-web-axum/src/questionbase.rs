@@ -1,14 +1,14 @@
 
 use crate::Question;
 use std::collections::HashMap;
-#[allow(unused)]
-use serde::{Deserialize, Serialize};
+//#[allow(unused)]
+//use serde::{Deserialize, Serialize};
 
 pub struct Store {
     pub question_map: HashMap<String, Question>,
 }
 
-#[allow(unused)]
+//#[allow(unused)]
 impl Store {
     pub fn new() -> Self {
         Self {
@@ -19,11 +19,11 @@ impl Store {
         let file = include_str!("../questions.json");
         serde_json::from_str(file).expect("can't read questions.json!")
     }
+    /*
     pub fn get_questions(&self) -> HashMap<String, Question> {
         self.question_map.clone()
     }
 
-    /*
     fn init(&mut self) -> &mut Store {
         let question = Question::new(
             "1".to_string(),

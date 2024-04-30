@@ -4,23 +4,22 @@ mod question;
 mod route;
 mod questionbase;
 
-#[allow(unused)]
-use handler::*;
-#[allow(unused)]
-use response::*;
-#[allow(unused)]
+//#[allow(unused)]
+//use handler::{create_question_handler, get_question_handler, health_check, question_list_handler};
+//#[allow(unused)]
+//use response::{GenericRepsonse, QuestionData, SingleQuestionResponse, QuestionListResponse};
+//#[allow(unused)]
 use question::*;
-#[allow(unused)]
-use route::*;
-#[allow(unused)]
+//#[allow(unused)]
+//#[allow(unused)]
 use questionbase::*;
 
 extern crate headers;
 
-#[allow(unused)]
+//#[allow(unused)]
 use axum::{
-    http::{HeaderValue, Method, StatusCode},
-    response::{IntoResponse, Json},
+    http::{HeaderValue, Method/*, StatusCode */},
+    //response::{IntoResponse, Json},
     //routing::Rejection,
     //error_handling::HandleError,
     // Json, Router,
@@ -28,8 +27,8 @@ use axum::{
     //routing::{delete, get, post, put, Router},
 };
 use std::fmt;
-#[allow(unused)]
-use std::convert::Infallible;
+//#[allow(unused)]
+//use std::convert::Infallible;
 use std::sync::Arc;
 use std::collections::HashMap;
 use tokio::sync::Mutex;
@@ -38,10 +37,10 @@ use tower_http::cors::CorsLayer;
 use ::serde::{Deserialize, Serialize};
 use headers::*;
 
-#[allow(unused)]
-use std::io::{Error, ErrorKind};
-#[allow(unused)]
-use std::fs::File;
+//#[allow(unused)]
+//use std::io::{Error, ErrorKind};
+//#[allow(unused)]
+//use std::fs::File;
 
 //use std::str::FromStr;
 //use tower::{ServiceBuilder, ServiceExt, Service};

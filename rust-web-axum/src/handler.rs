@@ -13,12 +13,12 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use anyhow::Error as BoxError;
+//use anyhow::Error as BoxError;
 use std::fs::File;
 use std::io::Read;
 
 use crate::{
-    question::{QueryOptions, Question, UpdateQuestionSchema, DB},
+    question::{QueryOptions, Question,/* UpdateQuestionSchema, */ DB},
     response::{QuestionListResponse,/* QuestionData, */SingleQuestionResponse},
 };
 
@@ -34,12 +34,13 @@ pub async fn health_check() -> impl IntoResponse {
     Json(json_response)
 }
 
-#[allow(unused)]
+//#[allow(unused)]
+/*
 pub async fn get_questions(store: Store) -> Result<Vec<Question>, BoxError> {
     let res: Vec<Question> = store.question_map.values().cloned().collect();
     Ok(res)
 }
-
+*/
 pub async fn get_question_handler(
     Path(id): Path<String>,
     State(_db): State<DB>,
@@ -136,7 +137,7 @@ pub async fn create_question_handler (
     Ok((StatusCode::CREATED, Json(json_response)))
      
 }
-
+/*
 pub async fn edit_question_handler(
     Path(id): Path<String>,
     State(db): State<DB>,
@@ -186,3 +187,4 @@ pub async fn delete_question_handler(
     Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
+*/
