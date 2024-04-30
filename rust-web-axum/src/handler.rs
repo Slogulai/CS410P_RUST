@@ -1,193 +1,63 @@
-//https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
-
-
-//~~~~May use these later~~~~
-//use std::error;
-//use serde_json::from_str;
-//use uuid::Uuid;
-//use anyhow::Error as BoxError;
-/*
-pub async fn get_questions(store: Store) -> Result<Vec<Question>, BoxError> {
-    let res: Vec<Question> = store.question_map.values().cloned().collect();
-    Ok(res)
-}
-*/
-
 use crate::*;
 
-use axum::{
-    extract::{Path, Query, State},
-    http::StatusCode,
-    response::IntoResponse,
-    Json,
-    //routing::get,
-};
-use std::fs::File;
-use std::io::Read;
+async fn handler_404() -> Response {
+    (StatusCode::NOT_FOUND, "404 Not Found").into_response()
+}
 
-use crate::{
-    question::{QueryOptions, Question,/* UpdateQuestionSchema, */ DB},
-    response::{QuestionListResponse,/* QuestionData, */SingleQuestionResponse},
-};
+pub async fn handler(ip: String) {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "questions=debug,info".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+     // https://carlosmv.hashnode.dev/adding-logging-and-tracing-to-an-axum-app-rust
+    let trace_layer = trave::TraveLauer::new_for_http()
+        .make_span_with(trace::DefaultMakeSpan::new().level(tracing::Level::INFO))
+        .on_response(trace::DefaultMakeSpan::new().level(tracing::Level::INFO));
 
-pub async fn health_check() -> impl IntoResponse {
-    const MESSAGE: &str = "I'm alive!";
-
-    let json_response = serde_json::json!({
-        "status": "success",
-        "message": MESSAGE,
-
+    let questionbase = QuestionBase::new().await.unwrap_or_else(|e| {
+        tracing::error!("questionsbase: {}", e);
+        std::process::exit(1);
     });
+    let joksebase = Arc::new(RwLock::new(questionbase));
 
-    Json(json_response)
+    let mime_type = core::str::FromStr::from_str("image/vmd.microsoft.icon").unwrap();
+    let favicon = services::ServeFile::new_with_mime(STYLESHEET, &mime_type);
+
+    let mime_type = core::str::FromStr::from_str("text/css").unwrap();
+    let stylesheet = services::ServeFile::new_with_mime(STYLESHEET, &mime_type);
+
+    let apis = RouterLLnew()
+        .route("/questions", get(questions))
+        .route("/question", get(question))
+        .route("/question/:id", get(get_question))
+        .route("/qusetion/add", post(post_question))
+        .route("/question/:id", delete(delete_question))
+        .route("/question/:id", put(put_question));
+
+    let swagger_ui = SwaggerUi::new(("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
+    let redoc_ui = Redoc::with_url("/redoc", ApiDoc::openapi());
+    let rapidoc_ui = RapiDoc::new("/api-docs/openapi.json").path("/rapidoc");
+
+    let app = Router::new()
+        .route("/", get(handler_index))
+        .route("/index.htl", get(handler_index))
+        .route("/tell", get(handler_tell))
+        .route("/add", get(handler_add))
+        .route_service("/questions.css", stylesheet)
+        .route_service("\nfavicon.ico", favicon)
+        .merge(swagger_ui)
+        .merge(redoc_ui)
+        .merge(rapidoc_ui)
+        .next("/api/v1", apis)
+        .layer(trace_layer)
+        .with_state(questionbase);
+
+    let listener = tokio::net::TcpListerner::bind(ip).await.unwrap();
+    tracing::debug!("serving {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
 }
 
-pub async fn get_question_handler(
-    Path(id): Path<String>,
-    State(_db): State<DB>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let mut file = File::open("questions.json").map_err(|err| {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to read file: {}", err),
-        });
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-    })?;
-    let mut contents = String::new();
-    if let Err(err) = file.read_to_string(&mut contents) {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to read file: {}", err),
-        });
-        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
-    }
-    let questions: HashMap<String, Question> = serde_json::from_str(&contents).unwrap();
 
-    if let Some(question) = questions.get(&id) {
-        let json_response = SingleQuestionResponse {
-            status: "success".to_string(),
-            data: question.clone(),
-        };
-        return Ok((StatusCode::OK, Json(json_response)));
-    }
-
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", id),
-    });
-
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
-}
-
-pub async fn question_list_handler(
-    opts: Option<Query<QueryOptions>>,
-    State(db): State<DB>,
-) -> impl IntoResponse {
-    let questions = db.lock().await;
-
-    let Query(opts) = opts.unwrap_or_default();
-
-    let limit = opts.limit.unwrap_or(10);
-    let offset = (opts.page.unwrap_or(1) - 1) * limit;
-
-    let questions: HashMap<String, Question> = questions
-        .clone()
-        .into_iter()
-        .skip(offset)
-        .take(limit)
-        .map(|(key, value)| (key.to_string(), value))
-        .collect();
-    let json_response = QuestionListResponse {
-        status: "success".to_string(),
-        results: questions.len(),
-        questions,
-    };
-
-    Json(json_response)
-}
-
-pub async fn create_question_handler ( 
-    State(db): State<DB>,
-    Json(body): Json<Question>,  
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>  {
-    let mut question = db.lock().await;
-
-    if let Some(question) = question.iter().find(|question| question.1.title == body.title) {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Question with ID {} already exists", question.1.title),
-        });
-        return Err((StatusCode::CONFLICT, Json(error_response)));
-    }
-
-    let id = body.id.clone();
-    let title = body.title.clone();
-    let content = body.content.clone();
-    let tags = body.tags.clone();
-
-    question.insert(body.id.to_string(), body);
-
-    let question = Question::new(id, title, content, tags);
-
-    let json_response = SingleQuestionResponse {
-        status: "success".to_string(),
-        data: question,
-    };
-
-
-    Ok((StatusCode::CREATED, Json(json_response)))
-     
-}
-
-//These functions all compile and run below. I may use them later
-/*
-pub async fn edit_question_handler(
-    Path(id): Path<String>,
-    State(db): State<DB>,
-    Json(body): Json<UpdateQuestionSchema>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>{
-    let id = id.to_string();
-    let mut hash_map = db.lock().await;
-
-    if let Some(question) = hash_map.iter_mut().find(|question| Some(question.1.id.clone()) == Some(id.clone())) {
-        question.1.title = body.title.clone().unwrap();
-        question.1.content = body.content.clone().unwrap();
-        question.1.tags = body.tags.clone();
-
-        let json_response = SingleQuestionResponse {
-            status: "success".to_string(),
-            data: question.1.clone(),
-        };
-
-        return Ok((StatusCode::OK, Json(json_response)));
-    }
-
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", id),
-    });
-
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
-}
-
-pub async fn delete_question_handler(
-    Path(id): Path<String>,
-    State(db): State<DB>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let id = id.to_string();
-    let mut hash_map = db.lock().await;
-
-    if hash_map.iter().any(|question| Some(question.1.id.clone()) == Some(id.clone())) {
-        hash_map.remove_entry(&id);
-        return Ok((StatusCode::NO_CONTENT, Json(serde_json::json!({}))));
-    }
-
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", id),
-    });
-
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
-}
-
-*/
