@@ -43,7 +43,7 @@ use utoipa_rapidoc::RapiDoc;
 use utoipa_redoc::ReDoc;
 use utoipa_swagger_ui::SwaggerUI;
 
-const STYLESHEET: &str = "/assets/static/question.css"
+const STYLESHEET: &str = "/assets/static/question.css";
 
 #[derive(Parser)]
 #[command(version, about, long_about-None)]
