@@ -13,7 +13,6 @@ use crate::{
         //get_questions,
     },
     question,
-    //handler, // Import the handler module
 };
 pub fn create_router() -> Router {
     let db = question::question_db();

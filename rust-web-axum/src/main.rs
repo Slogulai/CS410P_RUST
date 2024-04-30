@@ -4,19 +4,11 @@ mod question;
 mod route;
 mod questionbase;
 
-//#[allow(unused)]
-//use handler::{create_question_handler, get_question_handler, health_check, question_list_handler};
-//#[allow(unused)]
-//use response::{GenericRepsonse, QuestionData, SingleQuestionResponse, QuestionListResponse};
-//#[allow(unused)]
 use question::*;
-//#[allow(unused)]
-//#[allow(unused)]
 use questionbase::*;
 
 extern crate headers;
 
-//#[allow(unused)]
 use axum::{
     http::{HeaderValue, Method/*, StatusCode */},
     //response::{IntoResponse, Json},
@@ -27,8 +19,6 @@ use axum::{
     //routing::{delete, get, post, put, Router},
 };
 use std::fmt;
-//#[allow(unused)]
-//use std::convert::Infallible;
 use std::sync::Arc;
 use std::collections::HashMap;
 use tokio::sync::Mutex;
@@ -37,9 +27,12 @@ use tower_http::cors::CorsLayer;
 use ::serde::{Deserialize, Serialize};
 use headers::*;
 
-//#[allow(unused)]
+
+//~~~~~Stuff not being used, but may use later~~~~~
+//use handler::{create_question_handler, get_question_handler, health_check, question_list_handler};
+//use response::{GenericRepsonse, QuestionData, SingleQuestionResponse, QuestionListResponse};
+//use std::convert::Infallible;
 //use std::io::{Error, ErrorKind};
-//#[allow(unused)]
 //use std::fs::File;
 
 //use std::str::FromStr;
