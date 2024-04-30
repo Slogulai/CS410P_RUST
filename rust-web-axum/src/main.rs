@@ -6,65 +6,53 @@ mod questionbase;
 
 use question::*;
 use questionbase::*;
+use response::*;
+use handler::*;
+use route::*;
 
-extern crate headers;
-
-use axum::{
-    http::{HeaderValue, Method/*, StatusCode */},
-    //response::{IntoResponse, Json},
-    //routing::Rejection,
-    //error_handling::HandleError,
-    // Json, Router,
-    //extract::{Path, State},
-    //routing::{delete, get, post, put, Router},
-};
-use std::fmt;
+use std::collections::HashSet;
+use std::error::Error;
 use std::sync::Arc;
-use std::collections::HashMap;
-use tokio::sync::Mutex;
-use route::create_router;
-use tower_http::cors::CorsLayer;
-use ::serde::{Deserialize, Serialize};
-use headers::*;
 
+use askama::Template;
+use axum::{
+    extract::{Path, Query},
+    http::StatusCode,
+    response::{IntoResponse, Redirect, Response},
+    routing::{delete, get, post, put},
+    Json, Router,
+};
 
-//~~~~~Stuff not being used, but may use later~~~~~
-//use handler::{create_question_handler, get_question_handler, health_check, question_list_handler};
-//use response::{GenericRepsonse, QuestionData, SingleQuestionResponse, QuestionListResponse};
-//use std::convert::Infallible;
-//use std::io::{Error, ErrorKind};
-//use std::fs::File;
+use clap::Parser;
+use serde::{ser::SerializeStruct, Deserialize, Serialize};
+extern crate serde_json;
+use sqlx::{self, Pool, Row, postgress::{Postgres, PgPool, PgRow}};
+extern crate thiserror;
+use tokio::{self, sync::RwLock};
+use tower_http::{services, trace};
+extern crate tracing;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use utoipa::{
+    openapi::schema::{ObjetBuilder, Schema, SchemaType},
+    openapi::RefOr,
+    OpenApi, ToSchema,
+};
 
-//use std::str::FromStr;
-//use tower::{ServiceBuilder, ServiceExt, Service};
-//use std::net::SocketAddr;
+use utoipa_rapidoc::RapiDoc;
+use utoipa_redoc::ReDoc;
+use utoipa_swagger_ui::SwaggerUI;
 
-//~~~~~~Thingies to Remember~~~~~~
-//Persistant store
-//random questions
-//adding questions
-//updating questions
-//database integration
-//get docker desktop
+const STYLESHEET: &str = "/assets/static/question.css"
 
-
-
-//https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
+#[derive(Parser)]
+#[command(version, about, long_about-None)]
+struct Args {
+    #[clap(short, long, default value = "127.0.0.1:3000")]
+    serve: String,
+}
 #[tokio::main]
 async fn main() {
-    let store = Store::new();
-    let _db = Arc::new(Mutex::new(store.question_map.clone()));
-
-    let cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-        .allow_credentials(true)
-        .allow_headers([HeaderName::from_lowercase(b"content-type").unwrap()]);
-
-    let app = create_router().layer(cors);
-
-    println!("Starting server on 127.0.0.1:3000...");
-
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let args = Args::parse();
+    handler(args.serve).await;
 }
+
