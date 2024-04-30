@@ -2,50 +2,84 @@
 
 use crate::*;
 //~~~~~~QUESTIONS STUFF~~~~~~~~
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct Question {
+    #[schema(example = "1")]
     pub id: String,
-    pub title: String,
-    pub content: String,
+    #[schema(example = "What is your name?")]
+    pub question: String,
+    #[schema(example = "My name is John Doe")]
+    pub answer: String,
+    #[schema(example = "name")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<String>>,
 }
-/*
-async fn return_error(r: Rejection) -> Result<impl IntoResponse, Infallible> {
-    let (code, message) = if r.is_not_found() {
-        (StatusCode::NOT_FOUND, "Not Found")
-    } else {
-        (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error")
-    };
-    Ok((code, message).into_response())
-}
-*/
 impl Question {
-    pub fn new(id: String, title: String, content: String, tags: Option<Vec<String>>) -> Self {
+    pub fn new(
+        id: &str, 
+        question: &str, 
+        answer: &str, 
+        tags: Option<Vec<String>>
+    ) -> Self {
+        let id = id.into();
+        let question = question.into();
+        let answer = answer.into();
+        let tags: Option<HashSet<String>> = if tags.is_empty() {
+            None
+        } else {
+            Some(tags.iter().copied().map(String::from).collect())
+        };
         Self {
             id,
-            title,
-            content,
+            question,
+            answer,
             tags,
         }
     }
-    /*
-    pub fn unwrap(self) -> (String, String, String, Option<Vec<String>>) {
-        (self.id, self.title, self.content, self.tags)
-    }
-    //Rust isnt liking this function
-    fn update_title(&self, new_title: String) -> Self {
-        Question::new(self.id, new_title, self.content, self.tags)
-    }
-    */
 }
 
+pub fn format_tags(tags: &HashSet<String>) -> String {
+    let taglist: Vev<&str> = tags.iter().map(String::as_ref).collect();
+    taglist.join(", ")
+}
+
+impl From<&Question> for String {
+    fn from (question: &Question) -> Self {
+        let mut text: String = "What is your favorite dog?\n".into();
+        text += "I like borzoids!\n";
+        text += &format!("{}.\n", question.question);  
+        text += &format!("{}\n", question.answer);
+        text += "\n";
+
+        let mut annote: Vec<String> = vec![format!("id: {}", question.id)];
+        if let Some(tags) = &question.tags {
+            annote.push(format!("tags: {}", format_tags(tags)));
+        }
+        let annote = annote.join("; ");
+        text += &format!("[{}]\n," annote);
+        text
+    }
+}
+
+impl IntoResponse for &Question {
+    fn into_response(self) -> Response {
+        (StatusCode::OK, Json(&self)).into_response()
+    }
+}
+
+
+
+
+
+
+/* 
 
 impl fmt::Display for Question {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "{}\n{}\n{}\n{:?}",
-            self.id, self.title, self.content, self.tags
+            self.id, self.question, self.answer, self.tags
         )
     }
 }
@@ -64,7 +98,8 @@ pub struct QueryOptions {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateQuestionSchema {
-    pub title: Option<String>,
-    pub content: Option<String>,
+    pub question: Option<String>,
+    pub answer: Option<String>,
     pub tags: Option<Vec<String>>,
 }
+*/
