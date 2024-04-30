@@ -1,19 +1,27 @@
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 
+
+//~~~~May use these later~~~~
 //use std::error;
 //use serde_json::from_str;
 //use uuid::Uuid;
+//use anyhow::Error as BoxError;
+/*
+pub async fn get_questions(store: Store) -> Result<Vec<Question>, BoxError> {
+    let res: Vec<Question> = store.question_map.values().cloned().collect();
+    Ok(res)
+}
+*/
 
 use crate::*;
 
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
-    //routing::get,
     response::IntoResponse,
     Json,
+    //routing::get,
 };
-//use anyhow::Error as BoxError;
 use std::fs::File;
 use std::io::Read;
 
@@ -34,13 +42,6 @@ pub async fn health_check() -> impl IntoResponse {
     Json(json_response)
 }
 
-//#[allow(unused)]
-/*
-pub async fn get_questions(store: Store) -> Result<Vec<Question>, BoxError> {
-    let res: Vec<Question> = store.question_map.values().cloned().collect();
-    Ok(res)
-}
-*/
 pub async fn get_question_handler(
     Path(id): Path<String>,
     State(_db): State<DB>,
@@ -137,6 +138,8 @@ pub async fn create_question_handler (
     Ok((StatusCode::CREATED, Json(json_response)))
      
 }
+
+//These functions all compile and run below. I may use them later
 /*
 pub async fn edit_question_handler(
     Path(id): Path<String>,
