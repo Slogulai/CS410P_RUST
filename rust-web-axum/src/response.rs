@@ -118,7 +118,7 @@ pub async fn update_question(
     Json(question): Json<Question>,
 ) -> Response {
     match questionbase.write().await.update(&question_id, question).await {
-        Ok(_) => StatusCode::OK.into_rewsponse(),
+        Ok(_) => StatusCode::OK.into_response(),
         Err(QuestionBaseError::QuestionUnprocessable(e)) => QuestionBaseError::response(
             StatusCode::UNPROCESSABLE_ENTITY,
             QuestionBaseErr::JokeUnprocessable(e),

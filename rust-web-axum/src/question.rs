@@ -40,7 +40,7 @@ impl Question {
 }
 
 pub fn format_tags(tags: &HashSet<String>) -> String {
-    let taglist: Vev<&str> = tags.iter().map(String::as_ref).collect();
+    let taglist: Vec<&str> = tags.iter().map(String::as_ref).collect();
     taglist.join(", ")
 }
 
