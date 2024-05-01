@@ -27,21 +27,21 @@ use axum::{
 use clap::Parser;
 use serde::{ser::SerializeStruct, Deserialize, Serialize};
 extern crate serde_json;
-use sqlx::{self, Pool, Row, postgress::{Postgres, PgPool, PgRow}};
+use sqlx::{self, Pool, Row, postgres::{Postgres, PgPool, PgRow}};
 extern crate thiserror;
 use tokio::{self, sync::RwLock};
 use tower_http::{services, trace};
 extern crate tracing;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::{
-    openapi::schema::{ObjetBuilder, Schema, SchemaType},
+    openapi::schema::{ObjectBuilder, Schema, SchemaType},
     openapi::RefOr,
     OpenApi, ToSchema,
 };
 
-use utoipa_rapidoc::RapiDoc;
 use utoipa_redoc::ReDoc;
-use utoipa_swagger_ui::SwaggerUI;
+use utoipa_swagger_ui::swagger_ui::SwaggerUI; // Add missing import statement
+use utoipa_rapidoc::RapiDoc;
 
 const STYLESHEET: &str = "/assets/static/question.css";
 
