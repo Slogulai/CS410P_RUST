@@ -24,6 +24,9 @@ use axum::{
 };
 use std::fs::File;
 use std::io::Read;
+use std::fs;
+use axum::extract::Form;
+use axum::response::Html;
 
 use crate::{
     question::{QueryOptions, Question,/* UpdateQuestionSchema, */ DB},
@@ -41,6 +44,7 @@ pub async fn health_check() -> impl IntoResponse {
 
     Json(json_response)
 }
+
 
 pub async fn get_question_handler(
     Path(id): Path<String>,
@@ -64,15 +68,12 @@ pub async fn get_question_handler(
     let questions: HashMap<String, Question> = serde_json::from_str(&contents).unwrap();
 
     if let Some(question) = questions.get(&id) {
-        let mut html_response = String::from("<h1>Question:</h1>");
-        html_response.push_str(&format!("<h2>Question {}:</h2>", id));
-        html_response.push_str(&format!("<p>{}</p>", question.title));
-        html_response.push_str(&format!("<p>{}</p>", question.content));
-        html_response.push_str("<p>Tags: ");
-        if let Some(tags) = &question.tags {
-            html_response.push_str(&tags.join(", "));
-        }
-        html_response.push_str("</p>");
+        let question_template = fs::read_to_string("assets/question_template.html").expect("Unable to read file");
+        let html_response = question_template
+            .replace("{id}", &id)
+            .replace("{title}", &question.title)
+            .replace("{content}", &question.content)
+            .replace("{tags}", &question.tags.as_ref().unwrap_or(&Vec::new()).join(", "));
 
         return Ok(axum::response::Html(html_response));
     }
@@ -84,6 +85,7 @@ pub async fn get_question_handler(
 
     Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
+
 
 pub async fn get_random_question_handler(
     State(_db): State<DB>,
@@ -110,15 +112,12 @@ pub async fn get_random_question_handler(
     let random_id = ids[rng.gen_range(0..ids.len())].clone();
 
     if let Some(question) = questions.get(&random_id) {
-        let mut html_response = String::from("<h1>Question:</h1>");
-        html_response.push_str(&format!("<h2>Question {}:</h2>", random_id));
-        html_response.push_str(&format!("<p>{}</p>", question.title));
-        html_response.push_str(&format!("<p>{}</p>", question.content));
-        html_response.push_str("<p>Tags: ");
-        if let Some(tags) = &question.tags {
-            html_response.push_str(&tags.join(", "));
-        }
-        html_response.push_str("</p>");
+        let question_template = fs::read_to_string("assets/question_template.html").expect("Unable to read file");
+        let html_response = question_template
+            .replace("{id}", &random_id)
+            .replace("{title}", &question.title)
+            .replace("{content}", &question.content)
+            .replace("{tags}", &question.tags.as_ref().unwrap_or(&Vec::new()).join(", "));
 
         return Ok(axum::response::Html(html_response));
     }
@@ -151,25 +150,37 @@ pub async fn get_all_questions_handler(
         .map(|(key, value)| (key.to_string(), value))
         .collect();
 
-    let mut html_response = String::from("<h1>All Questions:</h1>");
+    let questions_template = fs::read_to_string("assets/question_template.html").expect("Unable to read file");
+    let mut questions_html = String::new();
+    let _html_response = questions_template.replace("{questions}", &questions_html);
 
     for (id, question) in &questions {
-        html_response.push_str(&format!("<h2>Question {}:</h2>", id));
-        html_response.push_str(&format!("<p>{}</p>", question.title));
-        html_response.push_str(&format!("<p>{}</p>", question.content));
-        html_response.push_str("<p>Tags: ");
-        if let Some(tags) = &question.tags {
-            html_response.push_str(&tags.join(", "));
-        }
-        html_response.push_str("</p>");
+        let question_html = questions_template
+            .replace("{id}", id)
+            .replace("{title}", &question.title)
+            .replace("{content}", &question.content)
+            .replace("{tags}", &question.tags.as_ref().unwrap_or(&Vec::new()).join(", "));
+        questions_html.push_str(&question_html);
     }
+
+    let questions_template = fs::read_to_string("assets/questions_template.html").expect("Unable to read file");
+    let html_response = questions_template.replace("{questions}", &questions_html);
 
     axum::response::Html(html_response)
 }
 
+
+
+pub async fn add_question_form_handler() -> Result<Html<String>, StatusCode> {
+    match fs::read_to_string("assets/tell.html") {
+        Ok(contents) => Ok(Html(contents)),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
 pub async fn create_question_handler ( 
     State(db): State<DB>,
-    Json(body): Json<Question>,  
+    Form(body): Form<Question>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>  {
     let mut question = db.lock().await;
 

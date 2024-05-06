@@ -10,6 +10,7 @@ use crate::{
         get_question_handler,
         get_all_questions_handler,
         get_random_question_handler,
+        add_question_form_handler,
         create_question_handler, 
         //get_questions,
     },
@@ -19,9 +20,9 @@ pub fn create_router() -> Router {
     let db = question::question_db();
     Router::new()
         .route("/healthchecker", get(health_check))
-        .route("/questions", post(create_question_handler).get(get_all_questions_handler))
-        .route("/questions/:id", get(get_question_handler))
+        .route("/questions", get(get_all_questions_handler))
+        .route("/question/:id", get(get_question_handler))
         .route("/random_question", get(get_random_question_handler))
-        .route("/questions_data", get(get_question_handler)) // Fix: Remove extra closing parenthesis
+        .route("/add_question", post(create_question_handler).get(add_question_form_handler))
         .with_state(db)
 }

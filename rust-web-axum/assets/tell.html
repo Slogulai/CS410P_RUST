@@ -25,7 +25,7 @@ document.getElementById('createQuestionForm').addEventListener('submit', functio
   const content = document.getElementById('content').value;
   const tags = document.getElementById('tags').value.split(',');
 
-  fetch('/questions', {
+  fetch('/add_question', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
