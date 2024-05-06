@@ -42,10 +42,7 @@ impl Question {
 impl From<serde_json::Value> for Question {
     fn from(item: serde_json::Value) -> Self {
         let tags_value = item["tags"].as_array();
-        let tags = match tags_value {
-            Some(array) => Some(array.iter().map(|x| x.as_str().unwrap().to_string()).collect()),
-            None => None,
-        };
+        let tags = tags_value.map(|array| array.iter().map(|x| x.as_str().unwrap().to_string()).collect());
 
         Question {
             id: item["id"].as_str().unwrap().to_string(),
