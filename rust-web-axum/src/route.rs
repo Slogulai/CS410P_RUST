@@ -20,9 +20,9 @@ pub fn create_router() -> Router {
     let db = question::question_db();
     Router::new()
         .route("/healthchecker", get(health_check))
+        .route("/question", get(get_random_question_handler))
         .route("/questions", get(get_all_questions_handler))
         .route("/question/:id", get(get_question_handler))
-        .route("/random_question", get(get_random_question_handler))
         .route("/add_question", post(create_question_handler).get(add_question_form_handler))
         .with_state(db)
 }
