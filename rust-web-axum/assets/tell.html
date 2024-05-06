@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Create Question Form</h2>
+
+<form id="createQuestionForm">
+  <label for="id">ID:</label><br>
+  <input type="text" id="id" name="id"><br>
+  <label for="title">Title:</label><br>
+  <input type="text" id="title" name="title"><br>
+  <label for="content">Content:</label><br>
+  <input type="text" id="content" name="content"><br>
+  <label for="tags">Tags (comma separated):</label><br>
+  <input type="text" id="tags" name="tags"><br>
+  <input type="submit" value="Submit">
+</form>
+
+<script>
+document.getElementById('createQuestionForm').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  const id = document.getElementById('id').value;
+  const title = document.getElementById('title').value;
+  const content = document.getElementById('content').value;
+  const tags = document.getElementById('tags').value.split(',');
+
+  fetch('/questions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      id,
+      title,
+      content,
+      tags,
+    }),
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+});
+</script>
+
+</body>
+</html>

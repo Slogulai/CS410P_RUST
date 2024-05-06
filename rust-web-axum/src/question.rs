@@ -39,6 +39,22 @@ impl Question {
     */
 }
 
+impl From<serde_json::Value> for Question {
+    fn from(item: serde_json::Value) -> Self {
+        let tags_value = item["tags"].as_array();
+        let tags = match tags_value {
+            Some(array) => Some(array.iter().map(|x| x.as_str().unwrap().to_string()).collect()),
+            None => None,
+        };
+
+        Question {
+            id: item["id"].as_str().unwrap().to_string(),
+            title: item["title"].as_str().unwrap().to_string(),
+            content: item["content"].as_str().unwrap().to_string(),
+            tags,
+        }
+    }
+}
 
 impl fmt::Display for Question {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
