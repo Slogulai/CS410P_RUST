@@ -5,7 +5,7 @@ mod route;
 mod questionbase;
 
 use question::*;
-use questionbase::*;
+//use questionbase::*;
 
 extern crate headers;
 
@@ -29,6 +29,7 @@ use route::create_router;
 use tower_http::cors::CorsLayer;
 use ::serde::{Deserialize, Serialize};
 use headers::*;
+use std::fs::File;
 
 
 //~~~~~Stuff not being used, but may use later~~~~~
@@ -55,16 +56,20 @@ use headers::*;
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
 async fn main() {
-    let store = Store::new();
-    let _db = Arc::new(Mutex::new(store.question_map.clone()));
+    let file = File::open("questions.json").unwrap_or_else(|_| File::create("questions.json").unwrap());
+    let reader = BufReader::new(file);
+    let initial_state: HashMap<String, Question> = serde_json::from_reader(reader).unwrap_or_default();
 
+    // Use the existing questions as the initial state
+    let _db = Arc::new(Mutex::new(initial_state));
+   
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
         .allow_credentials(true)
         .allow_headers([HeaderName::from_lowercase(b"content-type").unwrap()]);
 
-    let app = create_router().layer(cors);
+    let app = create_router(_db).layer(cors);
 
     println!("Starting server on 127.0.0.1:3000...");
 

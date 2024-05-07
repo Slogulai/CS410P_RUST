@@ -1,18 +1,4 @@
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
-
-
-//~~~~May use these later~~~~
-//use std::error;
-//use serde_json::from_str;
-//use uuid::Uuid;
-//use anyhow::Error as BoxError;
-/*
-pub async fn get_questions(store: Store) -> Result<Vec<Question>, BoxError> {
-    let res: Vec<Question> = store.question_map.values().cloned().collect();
-    Ok(res)
-}
-*/
-
 use crate::*;
 
 use axum::{
@@ -22,29 +8,21 @@ use axum::{
     Json,
     //routing::get,
 };
-use std::fs::File;
 use std::io::Read;
 use std::fs;
-use axum::extract::Form;
 use axum::response::Html;
 
 use crate::{
     question::{QueryOptions, Question,/* UpdateQuestionSchema, */ DB},
-    response::{/*QuestionListResponse, QuestionData, */SingleQuestionResponse},
+    //response::{/*QuestionListResponse, QuestionData, */SingleQuestionResponse},
 };
 
-pub async fn health_check() -> impl IntoResponse {
-    const MESSAGE: &str = "I'm alive!";
-
-    let json_response = serde_json::json!({
-        "status": "success",
-        "message": MESSAGE,
-
-    });
-
-    Json(json_response)
+pub async fn welcome_handler() -> Result<Html<String>, StatusCode> {
+    match fs::read_to_string("assets/welcome.html") {
+        Ok(contents) => Ok(Html(contents)),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
 }
-
 
 pub async fn get_question_handler(
     Path(id): Path<String>,
@@ -177,44 +155,48 @@ pub async fn add_question_form_handler() -> Result<Html<String>, StatusCode> {
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
-
-pub async fn create_question_handler ( 
+pub async fn create_question_handler(
     State(db): State<DB>,
-    Form(body): Form<Question>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)>  {
-    let mut question = db.lock().await;
+    Json(body): Json<Question>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let mut questions = db.lock().await;
 
-    if let Some(question) = question
-        .iter()
-        .find(|question| question.1.title == body.title) {
+    if questions.iter().any(|question| question.1.id == body.id) {
         let error_response = serde_json::json!({
             "status": "error",
-            "message": format!("Question with ID {} already exists", question.1.title),
+            "message": format!("Question with ID {} already exists", body.id),
         });
         return Err((StatusCode::CONFLICT, Json(error_response)));
     }
 
-    let id = body.id.clone();
-    let title = body.title.clone();
-    let content = body.content.clone();
-    let tags = body.tags.clone();
+    questions.insert(body.id.clone(), body.clone());
 
-    question.insert(body.id.to_string(), body);
+    let file = File::create("questions.json").map_err(|err| {
+        let error_response = serde_json::json!({
+            "status": "error",
+            "message": format!("Failed to write to file: {}", err),
+        });
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
+    })?;
+    serde_json::to_writer_pretty(file, &*questions).map_err(|err| {
+        let error_response = serde_json::json!({
+            "status": "error",
+            "message": format!("Failed to serialize questions: {}", err),
+        });
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
+    })?;
 
-    let question = Question::new(id, title, content, tags);
-
-    let json_response = SingleQuestionResponse {
-        status: "success".to_string(),
-        data: question,
-    };
-
-
-    Ok((StatusCode::CREATED, Json(json_response)))
-     
+    let json_response = serde_json::json!({
+        "status": "success",
+        "message": format!("Successfully created question with ID {}", body.id),
+    });
+    Ok(Json(json_response))
 }
 
-//These functions all compile and run below. I may use them later
+
 /*
+
+//These functions all compile and run below. I may use them later
 pub async fn edit_question_handler(
     Path(id): Path<String>,
     State(db): State<DB>,
