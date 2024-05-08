@@ -155,6 +155,10 @@ pub async fn add_question_form_handler() -> Result<Html<String>, StatusCode> {
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
+
+
+
+
 pub async fn create_question_handler(
     State(db): State<DB>,
     Json(body): Json<Question>,
