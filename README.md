@@ -6,12 +6,15 @@ sloggett@pdx.edu
 
 This Repo will include all the work and assignments done by Christopher Sloggett
 
-FOR SAM OR BART!!!
+rust-web-axum is where the term project is located. To run the program, enter 'cargo run'
+into the command line and from a web browser go to 127.0.0.1:3000 for the home page of the 
+server. The different routes available can be found below: 
 
-rust-web-axum is where the term project is located. As of 4/26/24, the program is no
-where near complete and will be completed around Sunday the 28th. I have emailed Bart
-about this and will email again once I have completed the REST submission. I am using
-the two days provided on the late assignments sections of the syllabus. 
+127.0.0.1:3000 - Home Page
+127.0.0.1:3000/question - Random question
+127.0.0.1:3000/question/{id} - Specific question. Enter a number in the id field
+127.0.0.1:3000/add_question - Add a question to the database
+127.0.0.1:3000/{id}/edit - Edit a question. Enter a number in the id field
 
 This Repo has all the main directories that will be used to access assignments
 from the class CS410 Rust Web Development. All directories will be named 
@@ -22,10 +25,6 @@ Hope that this read me was helpful and that you enjoy the layout of the repo!
 
 ~~_~_~_~_~_~ HANDY CARGO COMMANDS _~_~_~_~_~_~~
 cargo watch -q -c -w src/ -x run (Will watch main.rs for changes and run again when changes are made)
-
-
-
-
 
 ~~_~_~_~_~_~ HANDY GIT COMMANDS _~_~_~_~_~_~~
 
@@ -42,12 +41,10 @@ cargo watch -q -c -w src/ -x run (Will watch main.rs for changes and run again w
 
 ^^Dont forget to use git status often!
 
-
 Deleting Branches after merging - optional
 1.) git branch --merged (shows which branches have been merged, safety check)
 2.) git branch -d <name of branch> (delete the branch)
 
- 
 1.) git log --graph --all --decorate --oneline 
 2.) git checkout 
 3.) git log
