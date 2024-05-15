@@ -6,15 +6,17 @@ sloggett@pdx.edu
 
 This Repo will include all the work and assignments done by Christopher Sloggett
 
-rust-web-axum is where the term project is located. To run the program, enter 'cargo run'
-into the command line and from a web browser go to 127.0.0.1:3000 for the home page of the 
-server. The different routes available can be found below: 
+rust-web-axum is where the term project is located. To run the program, cd 
+in the rust-web-axum directory and enter 'cargo run' into the command line.
+From a web browser go to 127.0.0.1:3000 for the home page of the server. 
+The different routes available can be found below: 
 
 127.0.0.1:3000 - Home Page
 127.0.0.1:3000/question - Random question
+127.0.0.1:3000/questions - All questions
 127.0.0.1:3000/question/{id} - Specific question. Enter a number in the id field
 127.0.0.1:3000/add_question - Add a question to the database
-127.0.0.1:3000/{id}/edit - Edit a question. Enter a number in the id field
+127.0.0.1:3000/edit_question/{id} - Edit a question. Enter a number in the id field
 
 This Repo has all the main directories that will be used to access assignments
 from the class CS410 Rust Web Development. All directories will be named 
