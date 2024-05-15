@@ -79,7 +79,8 @@ pub async fn get_random_question_handler(
         });
         return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
     }
-    let questions: HashMap<String, Question> = serde_json::from_str(&contents).unwrap();
+    let questions_vec: Vec<Question> = serde_json::from_str(&contents).unwrap();
+    let questions: HashMap<String, Question> = questions_vec.into_iter().map(|q| (q.id.clone(), q)).collect();
 
     let ids: Vec<String> = questions.keys().cloned().collect();
     let mut rng = rand::thread_rng();
@@ -278,25 +279,18 @@ pub async fn edit_question_handler(
 
     Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
+
 /*
 pub async fn delete_question_handler(
-    Path(id): Path<String>,
-    State(db): State<DB>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let id = id.to_string();
-    let mut hash_map = db.lock().await;
+    path(id): path<string>,
+    extension(db): extension<arc<mutex<hashmap<string, question::question>>>>,
+) -> impl intoresponse {
+    let mut db = db.lock().await;
 
-    if hash_map.iter().any(|question| Some(question.1.id.clone()) == Some(id.clone())) {
-        hash_map.remove_entry(&id);
-        return Ok((StatusCode::NO_CONTENT, Json(serde_json::json!({}))));
+    if db.remove(&id).is_some() {
+        (StatusCode::OK, "Question deleted successfully")
+    } else {
+        (StatusCode::NOT_FOUND, "Question not found")
     }
-
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", id),
-    });
-
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
-
 */

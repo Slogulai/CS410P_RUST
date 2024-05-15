@@ -5,17 +5,11 @@ mod route;
 mod questionbase;
 
 use question::*;
-//use questionbase::*;
 
 extern crate headers;
 
 use axum::{
-    http::{HeaderValue, Method/*, StatusCode */},
-    //response::{IntoResponse, Json},
-    //routing::Rejection,
-    //error_handling::HandleError,
-    // Json, Router,
-    //extract::{Path, State},
+    http::{HeaderValue, Method},
     //routing::{delete, get, post, put, Router},
 };
 use std::fmt;
@@ -31,18 +25,6 @@ use ::serde::{Deserialize, Serialize};
 use headers::*;
 use std::fs::File;
 
-
-//~~~~~Stuff not being used, but may use later~~~~~
-//use handler::{create_question_handler, get_question_handler, health_check, question_list_handler};
-//use response::{GenericRepsonse, QuestionData, SingleQuestionResponse, QuestionListResponse};
-//use std::convert::Infallible;
-//use std::io::{Error, ErrorKind};
-//use std::fs::File;
-
-//use std::str::FromStr;
-//use tower::{ServiceBuilder, ServiceExt, Service};
-//use std::net::SocketAddr;
-
 //~~~~~~Thingies to Remember~~~~~~
 //Persistant store
 //random questions
@@ -50,8 +32,6 @@ use std::fs::File;
 //updating questions
 //database integration
 //get docker desktop
-
-
 
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
@@ -61,7 +41,7 @@ async fn main() {
     let initial_state: HashMap<String, Question> = serde_json::from_reader(reader).unwrap_or_default();
 
     // Use the existing questions as the initial state
-    let _db = Arc::new(Mutex::new(initial_state));
+    let db = Arc::new(Mutex::new(initial_state));
    
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
@@ -69,7 +49,7 @@ async fn main() {
         .allow_credentials(true)
         .allow_headers([HeaderName::from_lowercase(b"content-type").unwrap()]);
 
-    let app = create_router(_db).layer(cors);
+    let app = create_router(db).layer(cors);
 
     println!("Starting server on 127.0.0.1:3000...");
 

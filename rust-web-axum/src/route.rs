@@ -4,7 +4,7 @@ use axum::{
 };
 use crate::{
     handler::{
-       // delete_question_handler, 
+        //delete_question_handler, 
         edit_question_handler,
         welcome_handler,
         get_question_handler,
@@ -26,5 +26,6 @@ pub fn create_router(db: Arc<Mutex<HashMap<String, Question>>>) -> Router {
         .route("/add_question", post(create_question_handler).get(add_question_form_handler))
         .route("/edit_question", get(get_edit_question_handler))
         .route("/edit_question", post(edit_question_handler))
+        //.route("/delete_question", post(delete_question_handler))
         .with_state(db)
 }
