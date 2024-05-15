@@ -111,11 +111,16 @@ pub async fn get_all_questions_handler(
 ) -> impl IntoResponse {
     let file = File::open("questions.json").expect("Unable to open file");
     let reader = BufReader::new(file);
-    let questions: HashMap<String, Question> = serde_json::from_reader(reader).expect("Unable to parse JSON");
+    let mut questions_vec: Vec<Question> = serde_json::from_reader(reader).expect("Unable to parse JSON");
+    questions_vec.sort_by(|a, b| a.id.cmp(&b.id));
+    let questions: HashMap<String, Question> = questions_vec
+        .into_iter()
+        .map(|question| (question.id.clone(), question))
+        .collect();
 
     let Query(opts) = opts.unwrap_or_default();
 
-    let limit = opts.limit.unwrap_or(10);
+    let limit = opts.limit.unwrap_or(1000);
     let offset = (opts.page.unwrap_or(1) - 1) * limit;
 
     let questions: HashMap<String, Question> = questions
