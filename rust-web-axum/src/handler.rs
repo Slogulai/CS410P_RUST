@@ -13,7 +13,6 @@ use std::io::Read;
 use std::fs;
 use axum::response::Html;
 
-
 pub async fn welcome_handler() -> Result<Html<String>, StatusCode> {
     match fs::read_to_string("assets/welcome.html") {
         Ok(contents) => Ok(Html(contents)),
@@ -60,7 +59,6 @@ pub async fn get_question_handler(
 
     Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
-
 
 pub async fn get_random_question_handler(
     State(_db): State<DB>,
@@ -149,17 +147,12 @@ pub async fn get_all_questions_handler(
     axum::response::Html(html_response)
 }
 
-
-
 pub async fn add_question_form_handler() -> Result<Html<String>, StatusCode> {
     match fs::read_to_string("assets/tell.html") {
         Ok(contents) => Ok(Html(contents)),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
-
-
-
 
 pub async fn create_question_handler(
     State(db): State<DB>,
@@ -206,7 +199,15 @@ pub async fn get_edit_question_handler(
     State(db): State<DB>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let id = id.to_string();
-    let hash_map = db.lock().await;
+    let file = File::open("questions.json").expect("Unable to open file");
+    let reader = BufReader::new(file);
+    let mut questions_vec: Vec<Question> = serde_json::from_reader(reader).expect("Unable to parse JSON");
+    questions_vec.sort_by(|a, b| a.id.cmp(&b.id));
+    let mut hash_map = db.lock().await;
+    *hash_map = questions_vec
+        .into_iter()
+        .map(|question| (question.id.clone(), question))
+        .collect();
 
     if let Some(question) = hash_map.iter().find(|question| Some(question.1.id.clone()) == Some(id.clone())) {
         let edit_question_template = fs::read_to_string("assets/edit_question.html").expect("Unable to read file");
@@ -244,7 +245,6 @@ pub async fn edit_question_handler(
 
         hash_map.insert(id.clone(), question_clone);
 
-        // Write the updated question to the JSON file
         let file = File::create("questions.json").map_err(|err| {
             let error_response = serde_json::json!({
                 "status": "error",
