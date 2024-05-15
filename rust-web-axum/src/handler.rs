@@ -7,7 +7,7 @@ use axum::{
 };
 use crate::{
     question::{QueryOptions, Question,/* UpdateQuestionSchema, */ DB},
-    response::{/*QuestionListResponse, QuestionData, */UpdateQuestionForm, SingleQuestionResponse},
+    response::{IdParam,/*QuestionListResponse, QuestionData, */UpdateQuestionForm, SingleQuestionResponse},
 };
 use std::io::Read;
 use std::fs;
@@ -24,24 +24,25 @@ pub async fn get_question_handler(
     Path(id): Path<String>,
     State(_db): State<DB>,
 ) -> impl IntoResponse {
-    let mut file = File::open("questions.json").map_err(|err| {
+    let file = File::open("questions.json").map_err(|err| {
         let error_response = serde_json::json!({
             "status": "error",
             "message": format!("Failed to read file: {}", err),
         });
         (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
     })?;
-    let mut contents = String::new();
-    if let Err(err) = file.read_to_string(&mut contents) {
+
+    let questions_vec: Vec<Question> = serde_json::from_reader(file).map_err(|err| {
         let error_response = serde_json::json!({
             "status": "error",
-            "message": format!("Failed to read file: {}", err),
+            "message": format!("Failed to deserialize questions: {}", err),
         });
-        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
-    }
-    let questions: HashMap<String, Question> = serde_json::from_str(&contents).unwrap();
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
+    })?;
 
-    if let Some(question) = questions.get(&id) {
+    let questions_map: HashMap<String, Question> = questions_vec.into_iter().map(|question| (question.id.clone(), question)).collect();
+
+    if let Some(question) = questions_map.get(&id) {
         let question_template = fs::read_to_string("assets/question_template.html").expect("Unable to read file");
         let html_response = question_template
             .replace("{id}", &id)
@@ -195,7 +196,7 @@ pub async fn create_question_handler(
 
 
 pub async fn get_edit_question_handler(
-    Path(id): Path<String>,
+    Query(IdParam { id, .. }): Query<IdParam>,
     State(db): State<DB>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let id = id.to_string();
@@ -230,7 +231,7 @@ pub async fn get_edit_question_handler(
 }
 
 pub async fn edit_question_handler(
-    Path(id): Path<String>,
+    Query(IdParam { id, .. }): Query<IdParam>,
     State(db): State<DB>,
     Form(body): Form<UpdateQuestionForm>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {

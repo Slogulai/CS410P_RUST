@@ -24,7 +24,7 @@ pub fn create_router(db: Arc<Mutex<HashMap<String, Question>>>) -> Router {
         .route("/questions", get(get_all_questions_handler))
         .route("/question/:id", get(get_question_handler))
         .route("/add_question", post(create_question_handler).get(add_question_form_handler))
-        .route("/edit_question/:id", get(get_edit_question_handler))
-        .route("/edit_question/:id", post(edit_question_handler))
+        .route("/edit_question", get(get_edit_question_handler))
+        .route("/edit_question", post(edit_question_handler))
         .with_state(db)
 }

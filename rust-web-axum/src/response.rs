@@ -3,6 +3,10 @@ use crate::*;
 //use crate::QuestionData;
 //use serde::Serialize;
 
+#[derive (Deserialize)]
+pub struct IdParam {
+    pub id: String,
+}
 #[derive(Serialize)]
 pub struct GenericRepsonse {
     pub status: String,

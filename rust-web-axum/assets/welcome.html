@@ -10,8 +10,22 @@
   <li><a href="/add_question">Add a question</a></li>
   <li><a href="/questions">View all questions</a></li>
   <li><a href="/question">View random questions</a></li>
-  <!-- Add more routes here -->
 </ul>
+
+<h2>Edit a Question</h2>
+
+<form id="edit-question-form" onsubmit="event.preventDefault(); redirectToEdit();">
+  <label for="id">Enter the ID of the question you want to edit:</label><br>
+  <input type="text" id="id" name="id" required><br>
+  <input type="submit" value="Edit Question">
+</form>
+
+<script>
+function redirectToEdit() {
+  var id = document.getElementById('id').value;
+  window.location.href = '/edit_question/' + id;
+}
+</script>
 
 </body>
 </html>
