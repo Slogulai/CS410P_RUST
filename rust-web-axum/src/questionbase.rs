@@ -1,4 +1,5 @@
 
+    /* May end up using these later
 use crate::Question;
 use std::collections::HashMap;
 //use serde::{Deserialize, Serialize};
@@ -17,7 +18,6 @@ impl Store {
         let file = include_str!("../questions.json");
         serde_json::from_str(file).expect("can't read questions.json!")
     }
-    /* May end up using these later
     pub fn get_questions(&self) -> HashMap<String, Question> {
         self.question_map.clone()
     }
@@ -35,5 +35,5 @@ impl Store {
         self.question_map.insert(question.id.clone(), question);
         self
     }
-    */
 }
+    */

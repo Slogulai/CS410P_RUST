@@ -18,7 +18,6 @@ async fn return_error(r: Rejection) -> Result<impl IntoResponse, Infallible> {
     };
     Ok((code, message).into_response())
 }
-*/
 impl Question {
     pub fn new(id: String, title: String, content: String, tags: Option<Vec<String>>) -> Self {
         Self {
@@ -38,6 +37,7 @@ impl Question {
     }
     */
 }
+*/
 
 impl From<serde_json::Value> for Question {
     fn from(item: serde_json::Value) -> Self {
@@ -67,9 +67,11 @@ impl fmt::Display for Question {
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 
 pub type DB = Arc<Mutex<HashMap<String, Question>>>;
+/*
 pub fn question_db() -> DB {
     Arc::new(Mutex::new(HashMap::new()))
 }
+*/
 #[derive(Debug, Deserialize, Default)]
 pub struct QueryOptions {
     pub page: Option<usize>,
