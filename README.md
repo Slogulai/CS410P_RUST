@@ -6,6 +6,9 @@ sloggett@pdx.edu
 
 This Repo will include all the work and assignments done by Christopher Sloggett
 
+This Repo has the main directory that will be used to access assignments
+from the class CS410 Rust Web Development.
+
 rust-web-axum is where the term project is located. To run the program, cd 
 in the rust-web-axum directory and enter 'cargo run' into the command line.
 From a web browser go to 127.0.0.1:3000 for the home page of the server. 
@@ -18,10 +21,6 @@ The different routes available can be found below:
 127.0.0.1:3000/add_question - Add a question to the database
 127.0.0.1:3000/edit_question/{id} - Edit a question. Enter a number in the id field
 
-This Repo has all the main directories that will be used to access assignments
-from the class CS410 Rust Web Development. All directories will be named 
-appropriately so as the professor or TA can easily find all of the pertinent files
-related to assignments throughout the class. 
 
 Hope that this read me was helpful and that you enjoy the layout of the repo!
 
