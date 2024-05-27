@@ -13,7 +13,7 @@ pub async fn set_database(pool: &PgPool) -> Result<(), sqlx::Error> {
         CREATE TABLE IF NOT EXISTS questions (
             id SERIAL PRIMARY KEY,
             question VARCHAR NOT NULL,
-            answer VARCHAR NOT NULL,
+            content VARCHAR NOT NULL,
             tags VARCHAR NOT NULL
         )
     "
