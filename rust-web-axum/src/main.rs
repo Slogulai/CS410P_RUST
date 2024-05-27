@@ -10,39 +10,28 @@ mod questionbase;
 //use response::{GenericRepsonse, QuestionData, SingleQuestionResponse, QuestionListResponse};
 //#[allow(unused)]
 use question::*;
+use questionbase::*;
 
 extern crate headers;
 
-//#[allow(unused)]
-use axum::{
-    http::{HeaderValue, Method/*, StatusCode */},
-    //response::{IntoResponse, Json},
-    //routing::Rejection,
-    //error_handling::HandleError,
-    // Json, Router,
-    //extract::{Path, State},
-    //routing::{delete, get, post, put, Router},
-};
+use axum::http::{HeaderValue, Method/*, StatusCode */};
 use std::fmt;
-//#[allow(unused)]
-//use std::convert::Infallible;
-use std::sync::Arc;
 use std::collections::HashMap;
-use tokio::sync::Mutex;
 use route::create_router;
 use tower_http::cors::CorsLayer;
 use ::serde::{Deserialize, Serialize};
 use headers::*;
-use std::fs::File;
-use postgres::{Client, NoTls};
-use postgres::Error as PostgresError;
 use std::env;
+use sqlx::PgPool;
 
+//Unused gang
+#[allow(unused)]
+use std::sync::Arc;
+#[allow(unused)]
+use tokio::sync::Mutex;
+#[allow(unused)]
+use std::fs::File;
 
-const DB_URL: &str = env!("DATABASE_URL");
-const OK_RESPONSE: &str = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n";
-const NOT_FOUND: &str = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
-const INTERNAL_SERVER_ERROR: &str = "HTTP/1.1 500 INTERNAL SERVER ERROR\r\n\r\n";
 
 //~~~~~~Thingies to Remember~~~~~~
 //Persistant store
@@ -57,12 +46,8 @@ const INTERNAL_SERVER_ERROR: &str = "HTTP/1.1 500 INTERNAL SERVER ERROR\r\n\r\n"
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
 async fn main() {
-    let file = File::open("questions.json").unwrap_or_else(|_| File::create("questions.json").unwrap());
-    let reader = BufReader::new(file);
-    let initial_state: HashMap<String, Question> = serde_json::from_reader(reader).unwrap_or_default();
-
-    // Use the existing questions as the initial state
-    let db = Arc::new(Mutex::new(initial_state));
+    let pool = question_db().await.expect("Failed to create pool");
+    set_database(&pool).await.expect("Failed to set database");
    
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
@@ -70,7 +55,8 @@ async fn main() {
         .allow_credentials(true)
         .allow_headers([HeaderName::from_lowercase(b"content-type").unwrap()]);
 
-    let app = create_router().layer(cors);
+    let router = create_router().await.expect("Failed to create router");
+    let app = router.layer(cors);
 
     println!("Starting server on 127.0.0.1:3000...");
 
