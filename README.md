@@ -21,6 +21,11 @@ The different routes available can be found below:
 127.0.0.1:3000/add_question - Add a question to the database
 127.0.0.1:3000/edit_question/{id} - Edit a question. Enter a number in the id field
 
+The current version of this program uses a JSON file for a persistent database. When
+the program is run, the JSON file is read and the data is stored in a HashMap. The HashMap
+is then updated with any CRUD operations that are performed and the whole Hashmap is immediately
+written to the JSON file. This is a taxing yet simple way of creating persistence and the program 
+will be changed to use a SQLx database in the future. 
 
 Hope that this read me was helpful and that you enjoy the layout of the repo!
 
