@@ -10,9 +10,6 @@ mod questionbase;
 //use response::{GenericRepsonse, QuestionData, SingleQuestionResponse, QuestionListResponse};
 //#[allow(unused)]
 use question::*;
-//#[allow(unused)]
-//#[allow(unused)]
-use questionbase::*;
 
 extern crate headers;
 
@@ -36,15 +33,16 @@ use route::create_router;
 use tower_http::cors::CorsLayer;
 use ::serde::{Deserialize, Serialize};
 use headers::*;
+use std::fs::File;
+use postgres::{Client, NoTls};
+use postgres::Error as PostgresError;
+use std::env;
 
-//#[allow(unused)]
-//use std::io::{Error, ErrorKind};
-//#[allow(unused)]
-//use std::fs::File;
 
-//use std::str::FromStr;
-//use tower::{ServiceBuilder, ServiceExt, Service};
-//use std::net::SocketAddr;
+const DB_URL: &str = env!("DATABASE_URL");
+const OK_RESPONSE: &str = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n";
+const NOT_FOUND: &str = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
+const INTERNAL_SERVER_ERROR: &str = "HTTP/1.1 500 INTERNAL SERVER ERROR\r\n\r\n";
 
 //~~~~~~Thingies to Remember~~~~~~
 //Persistant store
@@ -59,9 +57,13 @@ use headers::*;
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
 async fn main() {
-    let store = Store::new();
-    let _db = Arc::new(Mutex::new(store.question_map.clone()));
+    let file = File::open("questions.json").unwrap_or_else(|_| File::create("questions.json").unwrap());
+    let reader = BufReader::new(file);
+    let initial_state: HashMap<String, Question> = serde_json::from_reader(reader).unwrap_or_default();
 
+    // Use the existing questions as the initial state
+    let db = Arc::new(Mutex::new(initial_state));
+   
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])

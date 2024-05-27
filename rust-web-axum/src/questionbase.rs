@@ -1,41 +1,23 @@
+use crate::*;
 
-use crate::Question;
-use std::collections::HashMap;
-//#[allow(unused)]
-//use serde::{Deserialize, Serialize};
-
-pub struct Store {
-    pub question_map: HashMap<String, Question>,
+pub async fn question_db() -> Result<PgPool, sqlx::Error> {
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = PgPool::connect(&database_url).await?;
+    Ok(pool)
 }
 
-//#[allow(unused)]
-impl Store {
-    pub fn new() -> Self {
-        Self {
-            question_map: Self::init(),
-        }
-    }
-    pub fn init() -> HashMap<String, Question> {
-        let file = include_str!("../questions.json");
-        serde_json::from_str(file).expect("can't read questions.json!")
-    }
-    /*
-    pub fn get_questions(&self) -> HashMap<String, Question> {
-        self.question_map.clone()
-    }
-
-    fn init(&mut self) -> &mut Store {
-        let question = Question::new(
-            "1".to_string(),
-            "What is the capital of France?".to_string(),
-            "Paris".to_string(),
-            Some(vec!["geography".to_string()]),
-        );
-        self.add_question(question)
-    }
-    fn add_question(&mut self, question: Question) -> &mut Store {
-        self.question_map.insert(question.id.clone(), question);
-        self
-    }
-    */
+pub async fn set_database(pool: &PgPool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "
+        CREATE TABLE IF NOT EXISTS questions (
+            id SERIAL PRIMARY KEY,
+            question VARCHAR NOT NULL,
+            answer VARCHAR NOT NULL,
+            tags VARCHAR NOT NULL
+        )
+    "
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
 }
