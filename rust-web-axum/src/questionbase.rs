@@ -1,9 +1,9 @@
 use crate::*;
 
-pub async fn question_db() -> Result<PgPool, sqlx::Error> {
+pub async fn question_db() -> Result<MyDatabase, sqlx::Error> {
     let database_url = env::var("question_data_base").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await?;
-    Ok(pool)
+    Ok(questionbase::MyDatabase { pool: pool })
 }
 
 pub async fn set_database(pool: &PgPool) -> Result<(), sqlx::Error> {
@@ -28,8 +28,6 @@ pub struct MyDatabase {
 }
 
 //Functions to add
-//check exists
-//insert question
 //update question
 //delete question
 

@@ -1,9 +1,8 @@
-
 use crate::*;
 
 use crate::{
     question::{QueryOptions, Question,},
-    response::{QuestionListResponse, SingleQuestionResponse},
+    response::SingleQuestionResponse,
     questionbase::MyDatabase,
 };
 
@@ -22,7 +21,6 @@ pub async fn health_check() -> impl IntoResponse {
     let json_response = serde_json::json!({
         "status": "success",
         "message": MESSAGE,
-
     });
 
     Json(json_response)
@@ -93,26 +91,21 @@ pub async fn get_all_questions_handler(
     opts: Option<Query<QueryOptions>>,
     State(db): State<Arc<MyDatabase>>,
 ) -> Result<axum::response::Html<String>, axum::http::Response<axum::Json<serde_json::Value>>> {
-    let questions: Vec<Question> = sqlx::query_as("SELECT * FROM questions")
-        .fetch_all(&**db)
-        .await
-        .map_err(|err| {
-            let error_response = serde_json::json!({
-                "status": "error",
-                "message": format!("Failed to fetch questions: {}", err),
-            });
-            axum::http::Response::builder()
-                .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .body(Json(error_response))
-                .unwrap()
-        })?;
-
     let Query(opts) = opts.unwrap_or_default();
 
-    let limit = opts.limit.unwrap_or(1000);
-    let offset = (opts.page.unwrap_or(1) - 1) * limit;
+    let limit = opts.limit.unwrap_or(1000) as i64;
+    let offset = ((opts.page.unwrap_or(1) as i64 - 1) * limit) as i64;
 
-    let questions: Vec<Question> = questions.into_iter().skip(offset).take(limit).collect();
+    let questions: Vec<Question> = db.get_questions(limit, offset).await.map_err(|err| {
+        let error_response = serde_json::json!({
+            "status": "error",
+            "message": format!("Failed to fetch questions: {}", err),
+        });
+        axum::http::Response::builder()
+            .status(StatusCode::INTERNAL_SERVER_ERROR)
+            .body(Json(error_response))
+            .unwrap()
+    })?;
 
     let questions_template = fs::read_to_string("assets/question_template.html").await.expect("Unable to read file");
     let mut questions_html = String::new();
@@ -133,11 +126,7 @@ pub async fn get_all_questions_handler(
 }
 
 
-
-
-
-
-
+/* 
 pub async fn add_question_form_handler() -> Result<Html<String>, StatusCode> {
     match fs::read_to_string("assets/tell.html").await {
         Ok(contents) => Ok(Html(contents)),
@@ -266,7 +255,6 @@ pub async fn edit_question_handler(
     Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
-/* 
 pub async fn edit_question_handler(
     Path(id): Path<String>,
     State(db): State<MyDatabase>,

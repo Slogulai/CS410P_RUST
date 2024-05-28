@@ -20,6 +20,7 @@ pub struct SingleQuestionResponse {
     pub data: Question,
 }
 
+//Not used
 #[derive(Serialize, Debug)]
 pub struct QuestionListResponse {
     pub status: String,

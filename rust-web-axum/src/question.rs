@@ -40,8 +40,8 @@ impl fmt::Display for Question {
 
 #[derive(Debug, Deserialize, Default)]
 pub struct QueryOptions {
-    pub page: Option<usize>,
-    pub limit: Option<usize>,
+    pub page: Option<i64>,
+    pub limit: Option<i64>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateQuestionSchema {
