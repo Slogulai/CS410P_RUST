@@ -81,3 +81,10 @@ impl MyDatabase {
 
     // Add more methods for other database operations...
 }
+impl Deref for MyDatabase {
+    type Target = PgPool;
+
+    fn deref(&self) -> &Self::Target {
+        &self.pool
+    }
+}
