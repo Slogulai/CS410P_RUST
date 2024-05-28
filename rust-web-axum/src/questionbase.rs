@@ -1,7 +1,7 @@
 use crate::*;
 
 pub async fn question_db() -> Result<PgPool, sqlx::Error> {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var("question_data_base").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await?;
     Ok(pool)
 }
@@ -26,6 +26,12 @@ pub async fn set_database(pool: &PgPool) -> Result<(), sqlx::Error> {
 pub struct MyDatabase {
     pool: PgPool,
 }
+
+//Functions to add
+//check exists
+//insert question
+//update question
+//delete question
 
 impl MyDatabase {
     pub async fn new(database_url: &str) -> Result<Self, sqlx::Error> {
@@ -60,24 +66,26 @@ impl MyDatabase {
         Ok(rows)
     }
 
-
-    pub async fn create_question(&self) -> Result<Question, sqlx::Error> {
-        let row = sqlx::query("INSERT INTO questions (question, content, tags) VALUES ($1, $2, $3) RETURNING *")
-            .bind("What is the meaning of life?")
-            .bind("42")
-            .bind("philosophy")
-            .fetch_one(&self.pool)
+    pub async fn check_exists(&self, id: i32) -> Result<bool, sqlx::Error> {
+        let row: Option<PgRow> = sqlx::query("SELECT * FROM questions WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&self.pool)
             .await?;
 
-        let question = Question {
-            id: row.get(0),
-            title: row.get(1),
-            content: row.get(2),
-            tags: row.get(3),
-        };
-
-        Ok(question)
+        Ok(row.is_some())
     }
+
+    pub async fn insert(&self, question: &Question) -> Result<(), sqlx::Error> {
+        sqlx::query("INSERT INTO questions (question, content, tags) VALUES ($1, $2, $3)")
+            .bind(&question.title)
+            .bind(&question.content)
+            .bind(&question.tags)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
 
     // Add more methods for other database operations...
 }

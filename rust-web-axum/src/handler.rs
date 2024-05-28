@@ -1,3 +1,4 @@
+
 use crate::*;
 
 use crate::{
@@ -5,6 +6,15 @@ use crate::{
     response::{QuestionListResponse, SingleQuestionResponse},
     questionbase::MyDatabase,
 };
+
+pub async fn welcome_handler() -> Result<Html<String>, StatusCode> {
+    match fs::read_to_string("assets/welcome.html").await {
+        Ok(contents) => {
+            Ok(Html(contents))
+        },
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
 
 pub async fn health_check() -> impl IntoResponse {
     const MESSAGE: &str = "I'm alive!";
@@ -20,7 +30,7 @@ pub async fn health_check() -> impl IntoResponse {
 
 pub async fn get_question_handler(
     Path(id): Path<i32>,
-    State(db): State<MyDatabase>,
+    State(db): State<Arc<MyDatabase>>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     match db.get_question(id).await {
         Ok(question) => {
@@ -42,10 +52,10 @@ pub async fn get_question_handler(
 
 
 pub async fn get_random_question_handler(
-    State(db): State<MyDatabase>,
+    State(db): State<Arc<MyDatabase>>,
 ) -> impl IntoResponse {
     let questions: Vec<Question> = sqlx::query_as("SELECT * FROM questions")
-        .fetch_all(&*db)
+        .fetch_all(&**db)
         .await
         .map_err(|err| {
             let error_response = serde_json::json!({
@@ -81,10 +91,10 @@ pub async fn get_random_question_handler(
 
 pub async fn get_all_questions_handler(
     opts: Option<Query<QueryOptions>>,
-    State(db): State<MyDatabase>,
+    State(db): State<Arc<MyDatabase>>,
 ) -> Result<axum::response::Html<String>, axum::http::Response<axum::Json<serde_json::Value>>> {
     let questions: Vec<Question> = sqlx::query_as("SELECT * FROM questions")
-        .fetch_all(&*db)
+        .fetch_all(&**db)
         .await
         .map_err(|err| {
             let error_response = serde_json::json!({
@@ -129,19 +139,25 @@ pub async fn get_all_questions_handler(
 
 
 pub async fn add_question_form_handler() -> Result<Html<String>, StatusCode> {
-    match fs::read_to_string("assets/tell.html") {
+    match fs::read_to_string("assets/tell.html").await {
         Ok(contents) => Ok(Html(contents)),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
 
 pub async fn create_question_handler(
-    State(db): State<DB>,
+    Extension(db): Extension<Arc<MyDatabase>>,
     Json(body): Json<Question>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let mut questions = db.lock().await;
+    let question_exists = db.check_question_exists(&body.id).await.map_err(|err| {
+        let error_response = serde_json::json!({
+            "status": "error",
+            "message": format!("Failed to check if question exists: {}", err),
+        });
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
+    })?;
 
-    if questions.iter().any(|question| question.1.id == body.id) {
+    if question_exists {
         let error_response = serde_json::json!({
             "status": "error",
             "message": format!("Question with ID {} already exists", body.id),
@@ -149,19 +165,10 @@ pub async fn create_question_handler(
         return Err((StatusCode::CONFLICT, Json(error_response)));
     }
 
-    questions.insert(body.id.clone(), body.clone());
-
-    let file = File::create("questions.json").map_err(|err| {
+    db.insert_question(&body).await.map_err(|err| {
         let error_response = serde_json::json!({
             "status": "error",
-            "message": format!("Failed to write to file: {}", err),
-        });
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-    })?;
-    serde_json::to_writer_pretty(file, &*questions).map_err(|err| {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to serialize questions: {}", err),
+            "message": format!("Failed to insert question: {}", err),
         });
         (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
     })?;
@@ -210,7 +217,6 @@ pub async fn get_edit_question_handler(
     Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
-/*
 pub async fn edit_question_handler(
     Query(IdParam { id, .. }): Query<IdParam>,
     State(db): State<DB>,
@@ -260,7 +266,7 @@ pub async fn edit_question_handler(
     Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
-
+/* 
 pub async fn edit_question_handler(
     Path(id): Path<String>,
     State(db): State<MyDatabase>,
