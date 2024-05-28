@@ -127,7 +127,6 @@ pub async fn get_all_questions_handler(
 
 
 
-/*
 
 pub async fn add_question_form_handler() -> Result<Html<String>, StatusCode> {
     match fs::read_to_string("assets/tell.html") {
@@ -211,6 +210,7 @@ pub async fn get_edit_question_handler(
     Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
+/*
 pub async fn edit_question_handler(
     Query(IdParam { id, .. }): Query<IdParam>,
     State(db): State<DB>,
