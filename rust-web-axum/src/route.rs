@@ -15,7 +15,7 @@ use crate::{
 };
 use crate::*;
 
-pub async fn create_router(db: State<Arc<MyDatabase>>) -> Router {
+pub async fn create_router(db: Arc<MyDatabase>) -> Router {
     Router::new()
         .route("/", get(welcome_handler))
         .route("/question", get(get_random_question_handler))

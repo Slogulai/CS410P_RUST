@@ -70,6 +70,7 @@ pub async fn get_random_question_handler(
         });
         return Err((StatusCode::NOT_FOUND, Json(error_response)));
     }
+    //comment
     let mut rng = rand::thread_rng();
     let random_question = questions.choose(&mut rng).unwrap();
 

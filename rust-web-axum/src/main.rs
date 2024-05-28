@@ -15,6 +15,7 @@ use axum::{
     response::IntoResponse,
     routing::{get, post},
     response::Html,
+    extract::Extension,
     Router,
     Json,
 };
@@ -40,8 +41,6 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 #[allow(unused)]
 use std::fmt;
-#[allow(unused)]
-use axum::extract::Extension;
 
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
@@ -55,7 +54,7 @@ async fn main() {
         .allow_credentials(true)
         .allow_headers([HeaderName::from_lowercase(b"content-type").unwrap()]);
 
-    let router = create_router(db.into()).await.expect("Failed to create router");
+    let router = create_router(db.into()).await;
     let app = router.layer(cors);
 
     println!("Starting server on 127.0.0.1:3000...");
