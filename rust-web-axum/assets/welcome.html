@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Welcome to my Rust web server!</h1>
+
+<p>Here are the available routes:</p>
+
+<ul>
+  <li><a href="/add_question">Add a question</a></li>
+  <li><a href="/questions">View all questions</a></li>
+  <li><a href="/question">View random questions</a></li>
+</ul>
+
+<h2>Edit a Question</h2>
+
+<form id="edit-question-form" onsubmit="event.preventDefault(); redirectToEdit();">
+  <label for="id">Enter the ID of the question you want to edit:</label><br>
+  <input type="text" id="id" name="id" required><br>
+  <input type="submit" value="Edit Question">
+</form>
+
+<h2>Delete a Question</h2>
+
+<form id="delete-question-form" onsubmit="event.preventDefault(); deleteQuestion();">
+  <label for="delete-id">Enter the ID of the question you want to delete:</label><br>
+  <input type="text" id="delete-id" name="delete-id" required><br>
+  <input type="submit" value="Delete Question">
+</form>
+
+<script>
+function redirectToEdit() {
+  var id = document.getElementById('id').value;
+  window.location.href = '/edit_question/' + id;
+}
+
+function deleteQuestion() {
+  var id = document.getElementById('delete-id').value;
+  fetch('/delete_question/' + id, { method: 'DELETE' })
+    .then(response => {
+      if (response.ok) {
+        document.body.innerHTML = '<h1>Question deleted successfully</h1><a href="/">Return to home</a>';
+      } else {
+        document.body.innerHTML = '<h1>Error deleting question</h1><a href="/">Return to home</a>';
+      }
+    });
+}
+</script>
+
+</body>
+</html>
