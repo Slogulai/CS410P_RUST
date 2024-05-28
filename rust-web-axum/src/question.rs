@@ -3,8 +3,9 @@
 use crate::*;
 //~~~~~~QUESTIONS STUFF~~~~~~~~
 #[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(sqlx::FromRow)]
 pub struct Question {
-    pub id: String,
+    pub id: i32,
     pub title: String,
     pub content: String,
     pub tags: Option<Vec<String>>,
@@ -16,7 +17,7 @@ impl From<serde_json::Value> for Question {
         let tags = tags_value.map(|array| array.iter().map(|x| x.as_str().unwrap().to_string()).collect());
 
         Question {
-            id: item["id"].as_str().unwrap().to_string(),
+            id: item["id"].as_i64().unwrap() as i32,
             title: item["title"].as_str().unwrap().to_string(),
             content: item["content"].as_str().unwrap().to_string(),
             tags,
