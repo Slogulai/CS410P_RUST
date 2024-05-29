@@ -1,6 +1,7 @@
 //https://medium.com/@raditzlawliet/build-crud-rest-api-with-rust-and-mysql-using-axum-sqlx-d7e50b3cd130
 
 use std::sync::Arc;
+use std::env;
 
 use dotenv::dotenv;
 use sqlx::mysql::{MySqlPool,MySqlPoolOptions};
@@ -18,7 +19,7 @@ async fn main() {
     dotenv().ok();
     println!("Restful question API!");
 
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = match MySqlPoolOptions::new()
         .max_connections(10)
         .connect(&database_url)
