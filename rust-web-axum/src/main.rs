@@ -33,6 +33,7 @@ use std::env;
 use tokio::fs;
 use std::ops::Deref;
 use rand::seq::SliceRandom;
+use dotenv::dotenv;
 
 //Unused gang
 #[allow(unused)]
@@ -45,6 +46,8 @@ use std::fmt;
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
+
     let db = question_db().await.expect("Failed to create database");
     set_database(&db).await.expect("Failed to set database");
    
