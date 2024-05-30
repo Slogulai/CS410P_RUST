@@ -12,14 +12,16 @@ extern crate headers;
 use axum::{
     http::{HeaderValue, Method, StatusCode},
     //extract::{Path, Query, State},
-    response::IntoResponse,
-    routing::{get, post},
+    //response::IntoResponse,
+    routing::get,
+    //routing::{get, post},
     response::Html,
     //extract::Extension,
     Router,
-    Json,
+    //Json,
 };
-use sqlx::mysql::{MySqlPool, MySqlRow};
+use sqlx::mysql::MySqlPool;
+//use sqlx::mysql::{MySqlPool, MySqlRow};
 use std::collections::HashMap;
 use route::create_router;
 use tower_http::cors::CorsLayer;
