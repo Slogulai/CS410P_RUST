@@ -1,10 +1,5 @@
 use crate::*;
 
-use crate::{
-    question::{QueryOptions, Question,},
-    response::SingleQuestionResponse,
-    questionbase::MyDatabase,
-};
 
 pub async fn welcome_handler() -> Result<Html<String>, StatusCode> {
     match fs::read_to_string("assets/welcome.html").await {
@@ -15,6 +10,12 @@ pub async fn welcome_handler() -> Result<Html<String>, StatusCode> {
     }
 }
 
+/*
+use crate::{
+    question::{QueryOptions, Question,},
+    response::SingleQuestionResponse,
+    questionbase::MyDatabase,
+};
 pub async fn health_check() -> impl IntoResponse {
     const MESSAGE: &str = "I'm alive!";
 
@@ -25,7 +26,6 @@ pub async fn health_check() -> impl IntoResponse {
 
     Json(json_response)
 }
-
 pub async fn get_question_handler(
     Path(id): Path<i32>,
     State(db): State<Arc<MyDatabase>>,
@@ -306,4 +306,5 @@ pub async fn delete_question_handler(
 }
 
 
+*/
 */

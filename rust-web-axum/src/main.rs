@@ -11,19 +11,15 @@ extern crate headers;
 
 use axum::{
     http::{HeaderValue, Method, StatusCode},
-    extract::{Path, Query, State},
+    //extract::{Path, Query, State},
     response::IntoResponse,
     routing::{get, post},
     response::Html,
-    extract::Extension,
+    //extract::Extension,
     Router,
     Json,
 };
-use sqlx::{
-    postgres::{PgPool, PgRow}, 
-    Row 
-    //FromRow
-};
+use sqlx::mysql::{MySqlPool, MySqlRow};
 use std::collections::HashMap;
 use route::create_router;
 use tower_http::cors::CorsLayer;
@@ -32,7 +28,6 @@ use headers::*;
 use std::env;
 use tokio::fs;
 use std::ops::Deref;
-use rand::seq::SliceRandom;
 use dotenv::dotenv;
 
 //Unused gang
@@ -42,6 +37,8 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 #[allow(unused)]
 use std::fmt;
+#[allow(unused)]
+use rand::seq::SliceRandom;
 
 //https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
 #[tokio::main]
