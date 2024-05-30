@@ -10,10 +10,10 @@ pub async fn set_database(pool: &MySqlPool) -> Result<(), sqlx::Error> {
     sqlx::query(
         "
         CREATE TABLE IF NOT EXISTS questions (
-            id SERIAL PRIMARY KEY,
-            question VARCHAR NOT NULL,
-            content VARCHAR NOT NULL,
-            tags VARCHAR NOT NULL
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            question VARCHAR(255) NOT NULL,
+            content VARCHAR(255) NOT NULL,
+            tags VARCHAR(255) NOT NULL
         )
     "
     )
