@@ -49,7 +49,7 @@ pub async fn question_list_handler(
 
     let questions = sqlx::query_as!(
         QuestionModel,
-        r#"SELECT * FROM questions ORDER by id LIMIT ? OFFSET ?"#,
+        r#"SELECT id, question, answer, tags FROM questions ORDER by id LIMIT ? OFFSET ?"#,
         limit as i32,
         offset as i32
     )
@@ -100,7 +100,7 @@ pub async fn create_question_handler(
         }
     }
 
-    let question = sqlx::query_as!(QuestionModel, r#"SELECT * FROM questions WHERE id = ?"#, id)
+    let question = sqlx::query_as!(QuestionModel, r#"SELECT id, question, answer, tags FROM questions WHERE id = ?"#, id)
         .fetch_one(&data.db)
         .await
         .map_err(|e| {
@@ -126,7 +126,7 @@ pub async fn get_question_handler(
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let query_result = sqlx::query_as!(
         QuestionModel,
-        r#"SELECT * FROM questions WHERE id = ?"#,
+        r#"SELECT id, question, answer, tags FROM questions WHERE id = ?"#,
         id.to_string()
     )
     .fetch_one(&data.db)
@@ -164,8 +164,9 @@ pub async fn edit_question_handler(
     State(data): State<Arc<AppState>>,
     Json(body): Json<UpdateQuestionSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let query_result = sqlx::query(
-        r#"SELECT * FROM questions WHERE id = ?"#,
+    let query_result = sqlx::query_as!(
+        QuestionModel,
+        r#"SELECT id, question, answer, tags FROM questions WHERE id = ?"#,
         id.to_string(),
     )
     .fetch_one(&data.db)

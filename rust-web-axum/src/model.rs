@@ -7,8 +7,7 @@ pub struct QuestionModel {
     pub id: i32,
     pub question: String,
     pub answer: String,
-    pub content: String,
-    pub tags: Vec<String>,
+    pub tags: String,
 }
 
 //Json Struct
@@ -17,6 +16,5 @@ pub struct QuestionModelResponse {
     pub id: i32,
     pub question: String,
     pub answer: String,
-    pub content: String,
-    pub tags: Vec<String>,
+    pub tags: String,
 }
