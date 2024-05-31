@@ -3,10 +3,11 @@ use serde::{Deserialize, Serialize};
 
 //Sqlx Struct
 #[derive(sqlx::FromRow, Deserialize, Serialize, Debug)]
-pub struct Question {
+pub struct QuestionModel {
     pub id: i32,
     pub question: String,
     pub answer: String,
+    pub content: String,
     pub tags: Vec<String>,
 }
 
@@ -16,5 +17,6 @@ pub struct QuestionModelResponse {
     pub id: i32,
     pub question: String,
     pub answer: String,
+    pub content: String,
     pub tags: Vec<String>,
 }

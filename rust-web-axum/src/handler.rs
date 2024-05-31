@@ -1,10 +1,11 @@
 //https://medium.com/@raditzlawliet/build-crud-rest-api-with-rust-and-mysql-using-axum-sqlx-d7e50b3cd130
+
 use std::sync::Arc;
 
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
-    response::intoResponse,
+    response::IntoResponse,
     Json,
 };
 
@@ -15,6 +16,17 @@ use crate::{
     schema::{CreateQuestionSchema, FilterOptions, UpdateQuestionSchema},
     AppState,
 };
+
+pub async fn health_check_handler() -> impl IntoResponse {
+    const MESSAGE: &str = "API Services";
+
+    let json_response = serde_json::json!({
+        "status": "ok",
+        "message": MESSAGE
+    });
+
+    Json(json_response)
+}
 
 fn to_question_response(question: &QuestionModel) -> QuestionModelResponse {
     QuestionModelResponse {
@@ -44,7 +56,7 @@ pub async fn question_list_handler(
     .fetch_all(&data.db)
     .await
     .map_err(|e| {
-        let error_response = serde_json;;json!({
+        let error_response = serde_json::json!({
             "status": "error",
             "message": format!("Database error: { }", e),
         });
@@ -68,15 +80,15 @@ pub async fn create_question_handler(
     State(data): State<Arc<AppState>>,
     Json(body): Json<CreateQuestionSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let id = uuid::Uuid::new_v4().tostring();
+    let id = uuid::Uuid::new_v4().to_string();
     let query_result = sqlx::query(
         r#"INSERT INTO questions (id, question, answer, tags) VALUES (?, ?, ?, ?)"#,
-    ).bund(id.clone())
-    .bind(body.question.tostring())
-    .bind(body.answer.tostring())
+    ).bind(id.clone())
+    .bind(body.question.to_string())
+    .bind(body.answer.to_string())
     .execute(&data.db)
     .await
-    .map_err(|err: sqlx::Error| err.tostring());
+    .map_err(|err: sqlx::Error| err.to_string());
 
     if let Err(err) = query_result {
         if err.contains("Duplicate entry") {
@@ -181,7 +193,7 @@ pub async fn edit_question_handler(
 
     let update_result = 
         sqlx::query(r#"UPDATE question SET question = ?, answer = ?, tags = ? WHERE id = ?"#)
-            .bind(body.question.to_ownd().unwrap_or_else(|| question.question.clone()))
+            .bind(body.question.to_owned().unwrap_or_else(|| question.question.clone()))
             .bind(body.answer.to_owned().unwrap_or_else(|| question.answer.clone()))
             .bind(body.tags.to_owned().unwrap_or_else(|| question.tags.clone()))
             .bind(id.to_string())
