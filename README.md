@@ -6,26 +6,41 @@ sloggett@pdx.edu
 
 This Repo will include all the work and assignments done by Christopher Sloggett
 
-FOR SAM OR BART!!!
+This Repo has the main directory that will be used to access assignments
+from the class CS410 Rust Web Development. All code subject to grading will
+be under the main branch. The two other branchs are for testing either barts code
+or implementations of my own code. All work that I intend to submit from testing
+branch will be merged with main.
 
-rust-web-axum is where the term project is located. As of 4/26/24, the program is no
-where near complete and will be completed around Sunday the 28th. I have emailed Bart
-about this and will email again once I have completed the REST submission. I am using
-the two days provided on the late assignments sections of the syllabus. 
+List of Branches:
+1.) main - All code that is subject to grading will be here
+2.) bart_branch - All code that is for testing Bart's code
+3.) testing_branch - Branch for testing new implementations
+4>) testing_branch2 - Another branch for testing other implementations
+5.) in_mem_branch - Branch for saving the work of the in memory database
 
-This Repo has all the main directories that will be used to access assignments
-from the class CS410 Rust Web Development. All directories will be named 
-appropriately so as the professor or TA can easily find all of the pertinent files
-related to assignments throughout the class. 
+rust-web-axum is folder where the term project is located. To run the program, cd into
+the rust-web-axum directory and enter 'cargo run' into the command line.
+From a web browser go to 127.0.0.1:3000 for the home page of the server. 
+The different routes available can be found below: 
+
+127.0.0.1:3000 - Home Page
+127.0.0.1:3000/question - Random question
+127.0.0.1:3000/questions - All questions
+127.0.0.1:3000/question/{id} - Specific question. Enter a number in the id field
+127.0.0.1:3000/add_question - Add a question to the database
+127.0.0.1:3000/edit_question/{id} - Edit a question. Enter a number in the id field
+
+The current version of this program uses a JSON file for a persistent database. When
+the program is run, the JSON file is read and the data is stored in a HashMap. The HashMap
+is then updated with any CRUD operations that are performed and the whole Hashmap is immediately
+written to the JSON file. This is a taxing yet simple way of creating persistence and the program 
+will be changed to use a SQLx database in the future. 
 
 Hope that this read me was helpful and that you enjoy the layout of the repo!
 
 ~~_~_~_~_~_~ HANDY CARGO COMMANDS _~_~_~_~_~_~~
 cargo watch -q -c -w src/ -x run (Will watch main.rs for changes and run again when changes are made)
-
-
-
-
 
 ~~_~_~_~_~_~ HANDY GIT COMMANDS _~_~_~_~_~_~~
 
@@ -42,12 +57,10 @@ cargo watch -q -c -w src/ -x run (Will watch main.rs for changes and run again w
 
 ^^Dont forget to use git status often!
 
-
 Deleting Branches after merging - optional
 1.) git branch --merged (shows which branches have been merged, safety check)
 2.) git branch -d <name of branch> (delete the branch)
 
- 
 1.) git log --graph --all --decorate --oneline 
 2.) git checkout 
 3.) git log
