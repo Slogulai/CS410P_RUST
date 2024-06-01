@@ -12,8 +12,14 @@ be under the main branch. The two other branchs are for testing either barts cod
 or implementations of my own code. All work that I intend to submit from testing
 branch will be merged with main.
 
-rust-web-axum is where the term project is located. Sorry for making you cd one 
-directory down, git can be fun like that. To run the program, cd into
+List of Branches:
+1.) main - All code that is subject to grading will be here
+2.) bart_branch - All code that is for testing Bart's code
+3.) testing_branch - Branch for testing new implementations
+4>) testing_branch2 - Another branch for testing other implementations
+5.) in_mem_branch - Branch for saving the work of the in memory database
+
+rust-web-axum is folder where the term project is located. To run the program, cd into
 the rust-web-axum directory and enter 'cargo run' into the command line.
 From a web browser go to 127.0.0.1:3000 for the home page of the server. 
 The different routes available can be found below: 

@@ -1,296 +1,274 @@
-//https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
-use crate::*;
+//https://medium.com/@raditzlawliet/build-crud-rest-api-with-rust-and-mysql-using-axum-sqlx-d7e50b3cd130
+
+use std::sync::Arc;
 
 use axum::{
-    extract::{Path, Query, State}, http::StatusCode, response::IntoResponse, Form, Json
-    //routing::get,
+    extract::{Path, Query, State},
+    http::StatusCode,
+    response::IntoResponse,
+    Json,
 };
+
+use serde_json::json;
+
 use crate::{
-    question::{QueryOptions, Question,/* UpdateQuestionSchema, */ DB},
-    response::{IdParam,/*QuestionListResponse, QuestionData, */UpdateQuestionForm, SingleQuestionResponse},
+    model::{QuestionModel, QuestionModelResponse},
+    schema::{CreateQuestionSchema, FilterOptions, UpdateQuestionSchema},
+    AppState,
 };
-use std::io::Read;
-use std::fs;
-use axum::response::Html;
 
-pub async fn welcome_handler() -> Result<Html<String>, StatusCode> {
-    match fs::read_to_string("assets/welcome.html") {
-        Ok(contents) => Ok(Html(contents)),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
-    }
-}
+pub async fn health_check_handler() -> impl IntoResponse {
+    const MESSAGE: &str = "API Services";
 
-pub async fn get_question_handler(
-    Path(id): Path<String>,
-    State(_db): State<DB>,
-) -> impl IntoResponse {
-    let file = File::open("questions.json").map_err(|err| {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to read file: {}", err),
-        });
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-    })?;
-
-    let questions_vec: Vec<Question> = serde_json::from_reader(file).map_err(|err| {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to deserialize questions: {}", err),
-        });
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-    })?;
-
-    let questions_map: HashMap<String, Question> = questions_vec.into_iter().map(|question| (question.id.clone(), question)).collect();
-
-    if let Some(question) = questions_map.get(&id) {
-        let question_template = fs::read_to_string("assets/question_template.html").expect("Unable to read file");
-        let html_response = question_template
-            .replace("{id}", &id)
-            .replace("{title}", &question.title)
-            .replace("{content}", &question.content)
-            .replace("{tags}", &question.tags.as_ref().unwrap_or(&Vec::new()).join(", "));
-
-        return Ok(axum::response::Html(html_response));
-    }
-
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", id),
+    let json_response = serde_json::json!({
+        "status": "ok",
+        "message": MESSAGE
     });
 
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
+    Json(json_response)
 }
 
-pub async fn get_random_question_handler(
-    State(_db): State<DB>,
-) -> impl IntoResponse {
-    let mut file = File::open("questions.json").map_err(|err| {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to read file: {}", err),
-        });
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-    })?;
-    let mut contents = String::new();
-    if let Err(err) = file.read_to_string(&mut contents) {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to read file: {}", err),
-        });
-        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+fn to_question_response(question: &QuestionModel) -> QuestionModelResponse {
+    QuestionModelResponse {
+        id: question.id.to_owned(),
+        question: question.question.to_owned(),
+        answer: question.answer.to_owned(),
+        tags: question.tags.to_owned(),
     }
-    let questions_vec: Vec<Question> = serde_json::from_str(&contents).unwrap();
-    let questions: HashMap<String, Question> = questions_vec.into_iter().map(|q| (q.id.clone(), q)).collect();
-
-    let ids: Vec<String> = questions.keys().cloned().collect();
-    let mut rng = rand::thread_rng();
-    let random_id = ids[rng.gen_range(0..ids.len())].clone();
-
-    if let Some(question) = questions.get(&random_id) {
-        let question_template = fs::read_to_string("assets/question_template.html").expect("Unable to read file");
-        let html_response = question_template
-            .replace("{id}", &random_id)
-            .replace("{title}", &question.title)
-            .replace("{content}", &question.content)
-            .replace("{tags}", &question.tags.as_ref().unwrap_or(&Vec::new()).join(", "));
-
-        return Ok(axum::response::Html(html_response));
-    }
-
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", random_id),
-    });
-
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
 }
 
-pub async fn get_all_questions_handler(
-    opts: Option<Query<QueryOptions>>,
-    State(_db): State<DB>,
-) -> impl IntoResponse {
-    let file = File::open("questions.json").expect("Unable to open file");
-    let reader = BufReader::new(file);
-    let mut questions_vec: Vec<Question> = serde_json::from_reader(reader).expect("Unable to parse JSON");
-    questions_vec.sort_by(|a, b| a.id.cmp(&b.id));
-    let questions: HashMap<String, Question> = questions_vec
-        .into_iter()
-        .map(|question| (question.id.clone(), question))
-        .collect();
+pub async fn question_list_handler(
+    opts: Option<Query<FilterOptions>>,
+    State(data): State<Arc<AppState>>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
 
     let Query(opts) = opts.unwrap_or_default();
 
     let limit = opts.limit.unwrap_or(1000);
     let offset = (opts.page.unwrap_or(1) - 1) * limit;
 
-    let questions: HashMap<String, Question> = questions
-        .into_iter()
-        .skip(offset)
-        .take(limit)
-        .map(|(key, value)| (key.to_string(), value))
-        .collect();
-
-    let questions_template = fs::read_to_string("assets/question_template.html").expect("Unable to read file");
-    let mut questions_html = String::new();
-    let _html_response = questions_template.replace("{questions}", &questions_html);
-
-    for (id, question) in &questions {
-        let question_html = questions_template
-            .replace("{id}", id)
-            .replace("{title}", &question.title)
-            .replace("{content}", &question.content)
-            .replace("{tags}", &question.tags.as_ref().unwrap_or(&Vec::new()).join(", "));
-        questions_html.push_str(&question_html);
-    }
-
-    let questions_template = fs::read_to_string("assets/questions_template.html").expect("Unable to read file");
-    let html_response = questions_template.replace("{questions}", &questions_html);
-
-    axum::response::Html(html_response)
-}
-
-pub async fn add_question_form_handler() -> Result<Html<String>, StatusCode> {
-    match fs::read_to_string("assets/tell.html") {
-        Ok(contents) => Ok(Html(contents)),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
-    }
-}
-
-pub async fn create_question_handler(
-    State(db): State<DB>,
-    Json(body): Json<Question>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let mut questions = db.lock().await;
-
-    if questions.iter().any(|question| question.1.id == body.id) {
+    let questions = sqlx::query_as!(
+        QuestionModel,
+        r#"SELECT id, question, answer, tags FROM questions ORDER by id LIMIT ? OFFSET ?"#,
+        limit as i32,
+        offset as i32
+    )
+    .fetch_all(&data.db)
+    .await
+    .map_err(|e| {
         let error_response = serde_json::json!({
             "status": "error",
-            "message": format!("Question with ID {} already exists", body.id),
-        });
-        return Err((StatusCode::CONFLICT, Json(error_response)));
-    }
-
-    questions.insert(body.id.clone(), body.clone());
-
-    let file = File::create("questions.json").map_err(|err| {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to write to file: {}", err),
+            "message": format!("Database error: { }", e),
         });
         (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
     })?;
-    serde_json::to_writer_pretty(file, &*questions).map_err(|err| {
-        let error_response = serde_json::json!({
-            "status": "error",
-            "message": format!("Failed to serialize questions: {}", err),
-        });
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-    })?;
+
+    let question_responeses = questions.iter()
+    .map(|question| to_question_response(&question))
+    .collect::<Vec<QuestionModelResponse>>();
 
     let json_response = serde_json::json!({
-        "status": "success",
-        "message": format!("Successfully created question with ID {}", body.id),
+        "status": "ok",
+        "count": question_responeses.len(),
+        "questions": question_responeses
     });
+
     Ok(Json(json_response))
 }
 
-
-
-pub async fn get_edit_question_handler(
-    Query(IdParam { id, .. }): Query<IdParam>,
-    State(db): State<DB>,
+pub async fn create_question_handler(
+    State(data): State<Arc<AppState>>,
+    Json(body): Json<CreateQuestionSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let id = id.to_string();
-    let file = File::open("questions.json").expect("Unable to open file");
-    let reader = BufReader::new(file);
-    let mut questions_vec: Vec<Question> = serde_json::from_reader(reader).expect("Unable to parse JSON");
-    questions_vec.sort_by(|a, b| a.id.cmp(&b.id));
-    let mut hash_map = db.lock().await;
-    *hash_map = questions_vec
-        .into_iter()
-        .map(|question| (question.id.clone(), question))
-        .collect();
+    let id = uuid::Uuid::new_v4().to_string();
+    let query_result = sqlx::query(
+        r#"INSERT INTO questions (id, question, answer, tags) VALUES (?, ?, ?, ?)"#,
+    ).bind(id.clone())
+    .bind(body.question.to_string())
+    .bind(body.answer.to_string())
+    .execute(&data.db)
+    .await
+    .map_err(|err: sqlx::Error| err.to_string());
 
-    if let Some(question) = hash_map.iter().find(|question| Some(question.1.id.clone()) == Some(id.clone())) {
-        let edit_question_template = fs::read_to_string("assets/edit_question.html").expect("Unable to read file");
-        let html_response = edit_question_template
-            .replace("{id}", &id)
-            .replace("{title}", &question.1.title)
-            .replace("{content}", &question.1.content)
-            .replace("{tags}", &question.1.tags.as_ref().unwrap_or(&Vec::new()).join(", "))
-            .replace("{id}", &id);
-
-        return Ok(axum::response::Html(html_response));
+    if let Err(err) = query_result {
+        if err.contains("Duplicate entry") {
+            let error_response = serde_json::json!({
+                "status": "error",
+                "message": "Question already exists",
+            });
+            return Err((StatusCode::CONFLICT, Json(error_response)));
+        }
     }
 
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", id),
+    let question = sqlx::query_as!(QuestionModel, r#"SELECT id, question, answer, tags FROM questions WHERE id = ?"#, id)
+        .fetch_one(&data.db)
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"status": "error", "message": format!("{:?}", e)}))
+            )
+        })?;
+
+    let question_response = serde_json::json!({
+        "status": "ok",
+        "data": serde_json::json!({
+            "quesion": to_question_response(&question)
+        }),
     });
 
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
+    Ok(Json(question_response))
+}
+
+pub async fn get_question_handler(
+    Path(id): Path<uuid::Uuid>,
+    State(data): State<Arc<AppState>>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let query_result = sqlx::query_as!(
+        QuestionModel,
+        r#"SELECT id, question, answer, tags FROM questions WHERE id = ?"#,
+        id.to_string()
+    )
+    .fetch_one(&data.db)
+    .await;
+
+    match query_result {
+        Ok(question) => {
+            let question_response = serde_json::json!({
+                "status": "ok",
+                "data": serde_json::json!({
+                    "question": to_question_response(&question)
+                }),
+            });
+
+            return Ok(Json(question_response));
+        }
+        Err(sqlx::Error::RowNotFound) => {
+            let error_response = serde_json::json!({
+                "status": "fail",
+                "message": format!("Question with ID: {} not found", id)
+            });
+            return Err((StatusCode::NOT_FOUND, Json(error_response)));
+        }
+        Err(e) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"status": "error", "message": format!("{:?}", e)})),
+            ));
+        }
+    };
 }
 
 pub async fn edit_question_handler(
-    Query(IdParam { id, .. }): Query<IdParam>,
-    State(db): State<DB>,
-    Form(body): Form<UpdateQuestionForm>,
+    Path(id): Path<uuid::Uuid>,
+    State(data): State<Arc<AppState>>,
+    Json(body): Json<UpdateQuestionSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let id = id.to_string();
-    let mut hash_map = db.lock().await;
+    let query_result = sqlx::query_as!(
+        QuestionModel,
+        r#"SELECT id, question, answer, tags FROM questions WHERE id = ?"#,
+        id.to_string(),
+    )
+    .fetch_one(&data.db)
+    .await;
 
-    if let Some(question) = hash_map.get(&id) {
-        let mut question_clone = question.clone();
-        question_clone.title = body.title.clone();
-        question_clone.content = body.content.clone();
-        question_clone.tags = Some(vec![body.tags.clone()]);
-
-        hash_map.insert(id.clone(), question_clone);
-
-        let file = File::create("questions.json").map_err(|err| {
+    let question = match query_result {
+        Ok(question) => question,
+        Err(sqlx::Error::RowNotFound) => {
             let error_response = serde_json::json!({
                 "status": "error",
-                "message": format!("Failed to write to file: {}", err),
+                "message": format!("Question with ID: {} not found", id)
             });
-            (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-        })?;
+            return Err((StatusCode::NOT_FOUND, Json(error_response)));
+        }
+        Err(e) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({
+                    "status": "error",
+                    "message": format!("{:?}", e)
+                })),
+            ));
+        }
+    };
 
-        let values: Vec<_> = hash_map.values().collect();
-        serde_json::to_writer_pretty(&file, &values).map_err(|err| {
-            let error_response = serde_json::json!({
-                "status": "error",
-                "message": format!("Failed to serialize questions: {}", err),
-            });
-            (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
-        })?;
+    let update_result = 
+        sqlx::query(r#"UPDATE question SET question = ?, answer = ?, tags = ? WHERE id = ?"#)
+            .bind(body.question.to_owned().unwrap_or_else(|| question.question.clone()))
+            .bind(body.answer.to_owned().unwrap_or_else(|| question.answer.clone()))
+            .bind(body.tags.to_owned().unwrap_or_else(|| question.tags.clone()))
+            .bind(id.to_string())
+            .execute(&data.db)
+            .await
+            .map_err(|e| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({
+                        "status": "error",
+                        "message": format!("{:?}", e)
+                    })),
+                )
+            })?;
 
-        let json_response = SingleQuestionResponse {
-            status: "success".to_string(),
-            data: hash_map.get(&id).unwrap().clone(),
-        };
-
-        return Ok((StatusCode::OK, Json(json_response)));
+    if update_result.rows_affected() == 0 {
+        let error_response = serde_json::json!({
+            "status": "error",
+            "message": format!("Failed to update question with ID: {}", id)
+        });
+        return Err((StatusCode::NOT_FOUND, Json(error_response)));
     }
 
-    let error_response = serde_json::json!({
-        "status": "error",
-        "message": format!("Question with ID {} not found", id),
+    let updated_quesiton = sqlx::query_as!(
+        QuestionModel,
+        r#"SELECT * FROM questions WHERE id = ?"#,
+        id.to_string()
+    )
+    .fetch_one(&data.db)
+    .await
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({
+                "status": "error",
+                "message": format!("{:?}", e)
+            })),
+        )
+    })?;
+
+    let question_response = serde_json::json!({
+        "status": "ok",
+        "data": serde_json::json!({
+            "question": to_question_response(&updated_quesiton)
+        }),
     });
 
-    Err((StatusCode::NOT_FOUND, Json(error_response)))
+    Ok(Json(question_response))
 }
 
-/*
 pub async fn delete_question_handler(
-    path(id): path<string>,
-    extension(db): extension<arc<mutex<hashmap<string, question::question>>>>,
-) -> impl intoresponse {
-    let mut db = db.lock().await;
+    Path(id): Path<uuid::Uuid>,
+    State(data): State<Arc<AppState>>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let query_result = sqlx::query!(r#"DELETE FROM questions WHERE id = ?"#,id.to_string())
+        .execute(&data.db)
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({
+                    "status": "error",
+                    "message": format!("{:?}", e)
+                })),
+            )
+        })?;
 
-    if db.remove(&id).is_some() {
-        (StatusCode::OK, "Question deleted successfully")
-    } else {
-        (StatusCode::NOT_FOUND, "Question not found")
+    if query_result.rows_affected() == 0 {
+        let error_response = serde_json::json!({
+            "status": "error",
+            "message": format!("Failed to delete question with ID: {}", id)
+        });
+        return Err((StatusCode::NOT_FOUND, Json(error_response)));
     }
+
+    Ok(StatusCode::NO_CONTENT)
 }
-*/

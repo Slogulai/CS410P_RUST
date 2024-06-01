@@ -1,31 +1,33 @@
+//https://medium.com/@raditzlawliet/build-crud-rest-api-with-rust-and-mysql-using-axum-sqlx-d7e50b3cd130
+use std::sync::Arc;
+
 use axum::{
     routing::{get, post},
     Router,
 };
+
 use crate::{
     handler::{
-        //delete_question_handler, 
-        edit_question_handler,
-        welcome_handler,
+        create_question_handler,
+        delete_question_handler,
+        health_check_handler,
+        question_list_handler,
         get_question_handler,
-        get_all_questions_handler,
-        get_random_question_handler,
-        add_question_form_handler,
-        create_question_handler, 
-        get_edit_question_handler,
-        //get_questions,
+        edit_question_handler,
     },
-    *,
+    AppState,
 };
-pub fn create_router(db: Arc<Mutex<HashMap<String, Question>>>) -> Router {
+
+pub fn create_router(app_state: Arc<AppState>) -> Router {
     Router::new()
-        .route("/", get(welcome_handler))
-        .route("/question", get(get_random_question_handler))
-        .route("/questions", get(get_all_questions_handler))
-        .route("/question/:id", get(get_question_handler))
-        .route("/add_question", post(create_question_handler).get(add_question_form_handler))
-        .route("/edit_question", get(get_edit_question_handler))
-        .route("/edit_question", post(edit_question_handler))
-        //.route("/delete_question", post(delete_question_handler))
-        .with_state(db)
+        .route("/healthcheck", get(health_check_handler))
+        .route("/questions", post(create_question_handler))
+        .route("/questions", get(question_list_handler))
+        .route(
+            "/questions/:id",
+            get(get_question_handler)
+                .patch(edit_question_handler)
+                .delete(delete_question_handler),
+        )
+        .with_state(app_state)
 }

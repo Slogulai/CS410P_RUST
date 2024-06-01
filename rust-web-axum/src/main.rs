@@ -1,58 +1,61 @@
+//https://medium.com/@raditzlawliet/build-crud-rest-api-with-rust-and-mysql-using-axum-sqlx-d7e50b3cd130
+
 mod handler;
-mod response;
-mod question;
+mod model;
 mod route;
-mod questionbase;
+mod schema;
 
-use question::*;
-
-extern crate headers;
-
-use axum::{
-    http::{HeaderValue, Method},
-    //routing::{delete, get, post, put, Router},
-};
-use std::fmt;
-use std::io::BufReader;
-use rand::Rng;
-//use tokio::io::BufReader;
 use std::sync::Arc;
-use std::collections::HashMap;
-use tokio::sync::Mutex;
+
+use axum::http::{header::CONTENT_TYPE, Method};
+
+use dotenv::dotenv;
+use tokio::net::TcpListener;
+
+use sqlx::mysql::{MySqlPool, MySqlPoolOptions};
+
 use route::create_router;
-use tower_http::cors::CorsLayer;
-use ::serde::{Deserialize, Serialize};
-use headers::*;
-use std::fs::File;
+use tower_http::cors::{Any, CorsLayer}; 
 
-//~~~~~~Thingies to Remember~~~~~~
-//Persistant store
-//random questions
-//adding questions
-//updating questions
-//database integration
-//get docker desktop
+pub struct AppState {
+    db: MySqlPool,
+}
 
-//https://codevoweb.com/create-a-simple-api-in-rust-using-the-axum-framework/
+
+
+
 #[tokio::main]
 async fn main() {
-    let file = File::open("questions.json").unwrap_or_else(|_| File::create("questions.json").unwrap());
-    let reader = BufReader::new(file);
-    let initial_state: HashMap<String, Question> = serde_json::from_reader(reader).unwrap_or_default();
+    dotenv().ok();
+    println!("🌟 REST API Service 🌟");
 
-    // Use the existing questions as the initial state
-    let db = Arc::new(Mutex::new(initial_state));
-   
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must set");
+    let pool = match MySqlPoolOptions::new()
+        .max_connections(10)
+        .connect(&database_url)
+        .await
+    {
+        Ok(pool) => {
+            println!("✅ Connection to the database is successful!");
+            pool
+        }
+        Err(err) => {
+            println!("❌ Failed to connect to the database: {:?}", err);
+            std::process::exit(1);
+        }
+    };
+
     let cors = CorsLayer::new()
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-        .allow_credentials(true)
-        .allow_headers([HeaderName::from_lowercase(b"content-type").unwrap()]);
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(Any)
+        .allow_headers([CONTENT_TYPE]);
 
-    let app = create_router(db).layer(cors);
+    let app = create_router(Arc::new(AppState { db: pool.clone() })).layer(cors);
 
-    println!("Starting server on 127.0.0.1:3000...");
+    println!("✅ Server started successfully at 0.0.0.0:8080");
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    axum::serve(listener, app.into_make_service())
+        .await
+        .unwrap();
 }
