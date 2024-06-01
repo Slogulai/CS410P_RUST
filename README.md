@@ -6,11 +6,10 @@ sloggett@pdx.edu
 
 This Repo will include all the work and assignments done by Christopher Sloggett
 
-This Repo has the main directory that will be used to access assignments
+This Repo contains the code that will be used to access assignments
 from the class CS410 Rust Web Development. All code subject to grading will
-be under the main branch. The two other branchs are for testing either barts code
-or implementations of my own code. All work that I intend to submit from testing
-branch will be merged with main.
+be under the main branch. The three other branchs are for testing either barts code
+or implementations of my own code. All work that I intend to submit will be merged with main.
 
 List of Branches:
 1.) main - All code that is subject to grading will be here
@@ -19,8 +18,16 @@ List of Branches:
 4>) testing_branch2 - Another branch for testing other implementations
 5.) in_mem_branch - Branch for saving the work of the in memory database
 
-rust-web-axum is folder where the term project is located. To run the program, cd into
-the rust-web-axum directory and enter 'cargo run' into the command line.
+rust-web-axum is folder where the term project is located, make sure to 
+cd into that directory before testing in these direcions. To run the program, 
+Docker is required to spin up a new container as well as the sqlx cli. Install 
+docker desktop and to install the sqlx cli run 'cargo install sqlx-cli' on the
+command line. Once you have done so run 'docker compose up --build -d' after the 
+container has spun up then also run 'sqlx migrate run' to start the db. Cargo check and
+cargo run WILL NOT WORK unless a docker container is running and you have done
+the sqlx migrate run command, otherwise the program will fail cargo check since there
+is no database runnning to connect to. 
+
 From a web browser go to 127.0.0.1:3000 for the home page of the server. 
 The different routes available can be found below: 
 
