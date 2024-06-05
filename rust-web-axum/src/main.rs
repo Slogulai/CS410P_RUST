@@ -52,9 +52,9 @@ async fn main() {
 
     let app = create_router(Arc::new(AppState { db: pool.clone() })).layer(cors);
 
-    println!("✅ Server started successfully at 0.0.0.0:8080");
+    println!("✅ Server started successfully at 127.0.0.1:8000");
 
-    let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
     axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
