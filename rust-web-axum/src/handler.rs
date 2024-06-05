@@ -9,6 +9,7 @@ use axum::{
     Json,
 };
 
+use tera::{Context, Tera};
 use serde_json::json;
 
 use crate::{
@@ -67,13 +68,33 @@ pub async fn question_list_handler(
     .map(|question| to_question_response(&question))
     .collect::<Vec<QuestionModelResponse>>();
 
-    let json_response = serde_json::json!({
-        "status": "ok",
-        "count": question_responeses.len(),
-        "questions": question_responeses
-    });
+    // Create a Tera instance and add your templates directory to it
+    let tera = match Tera::new("assets/*") {
+        Ok(t) => t,
+        Err(e) => {
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({
+                "status": "error",
+                "message": format!("Template error: {}", e),
+            }))))
+        }
+    };
 
-    Ok(Json(json_response))
+    // Create a context and add your data to it
+    let mut context = Context::new();
+    context.insert("questions", &question_responeses);
+
+    // Render your template with the context
+    let rendered = match tera.render("all_questions.html", &context) {
+        Ok(r) => r,
+        Err(e) => {
+            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({
+                "status": "error",
+                "message": format!("Rendering error: {}", e),
+            }))))
+        }
+    };
+
+    Ok(axum::response::Html(rendered))
 }
 
 pub async fn create_question_handler(
