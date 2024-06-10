@@ -37,10 +37,9 @@ pub fn question(question: &QuestionProps) -> Html {
     let question = &question.question;
     html! { <>
         <div class="question">
-            <span class="teller">{"Knock-Knock!"}</span><br/>
-            <span class="tellee">{"Who's there?"}</span><br/>
+            <span class="teller">{"Question: "}</span><br/>
+            <span class="tellee">{"Answer: "}</span><br/>
             <span class="teller">{question.question.clone()}</span><br/>
-            <span class="tellee">{format!("{} who?", &question.question)}</span><br/>
             <span class="teller">{question.answer.clone()}</span>
         </div>
         <span class="annotation">
