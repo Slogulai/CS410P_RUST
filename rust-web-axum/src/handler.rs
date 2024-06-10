@@ -65,7 +65,7 @@ pub async fn question_list_handler(
     })?;
 
     let question_responeses = questions.iter()
-    .map(|question| to_question_response(&question))
+    .map(to_question_response)
     .collect::<Vec<QuestionModelResponse>>();
 
     // Create a Tera instance and add your templates directory to it
@@ -162,22 +162,22 @@ pub async fn get_question_handler(
                 }),
             });
 
-            return Ok(Json(question_response));
+            Ok(Json(question_response))
         }
         Err(sqlx::Error::RowNotFound) => {
             let error_response = serde_json::json!({
                 "status": "fail",
                 "message": format!("Question with ID: {} not found", id)
             });
-            return Err((StatusCode::NOT_FOUND, Json(error_response)));
+            Err((StatusCode::NOT_FOUND, Json(error_response)))
         }
         Err(e) => {
-            return Err((
+            Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(json!({"status": "error", "message": format!("{:?}", e)})),
-            ));
+            ))
         }
-    };
+    }
 }
 
 pub async fn edit_question_handler(
