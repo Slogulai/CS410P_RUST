@@ -6,8 +6,6 @@ use cookie::*;
 use finder::*;
 use joke::*;
 
-use std::collections::HashSet;
-
 extern crate serde;
 // use gloo_console::log;
 use gloo_net::http;
@@ -65,7 +63,7 @@ impl Component for App {
         let question = &self.question;
         html! {
         <>
-            <h1>{ "Knock-Knock" }</h1>
+            <h1>{ "Question of the Day!" }</h1>
             if false {
                 {render_cookie(cookie)}
             }
