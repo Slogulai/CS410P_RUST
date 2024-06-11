@@ -11,8 +11,8 @@ pub struct QuestionModel {
 impl QuestionModel {
     pub async fn get_question(key: Option<String>) -> Msg {
         let request = match &key {
-            None => "http://localhost:8000/question".to_string(),
-            Some(ref key) => format!("http://localhost:8000/question/{}", key,),
+            None => "http://localhost:8000/questions".to_string(),
+            Some(ref key) => format!("http://localhost:8000/questions/{}", key,),
         };
         let response = http::Request::get(&request).send().await;
         match response {
