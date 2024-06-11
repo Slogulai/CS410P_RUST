@@ -1,15 +1,14 @@
 use crate::*;
 
 #[derive(Properties, Clone, PartialEq, serde::Deserialize)]
-pub struct QuestionStruct {
+pub struct QuestionModel {
     pub id: String,
     pub question: String,
     pub answer: String,
-    pub tags: Option<HashSet<String>>,
-    pub source: Option<String>,
+    pub tags: String,
 }
 
-impl QuestionStruct {
+impl QuestionModel {
     pub async fn get_question(key: Option<String>) -> Msg {
         let request = match &key {
             None => "http://localhost:3000/api/v1/question".to_string(),
@@ -22,14 +21,10 @@ impl QuestionStruct {
         }
     }
 }
-pub fn format_tags(tags: &HashSet<String>) -> String {
-    let taglist: Vec<&str> = tags.iter().map(String::as_ref).collect();
-    taglist.join(", ")
-}
 
 #[derive(Properties, Clone, PartialEq, serde::Deserialize)]
 pub struct QuestionProps {
-    pub question: QuestionStruct,
+    pub question: QuestionModel,
 }
 
 #[function_component(Question)]
@@ -42,15 +37,5 @@ pub fn question(question: &QuestionProps) -> Html {
             <span class="teller">{question.question.clone()}</span><br/>
             <span class="teller">{question.answer.clone()}</span>
         </div>
-        <span class="annotation">
-            {format!("[id: {}", &question.id)}
-            if let Some(ref tags) = question.tags {
-                {format!("; tags: {}", &format_tags(tags))}
-            }
-            if let Some(ref source) = question.source {
-                {format!("; source: {}", source)}
-            }
-            {"]"}
-        </span>
     </> }
 }

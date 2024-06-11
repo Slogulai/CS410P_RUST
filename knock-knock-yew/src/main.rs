@@ -16,7 +16,7 @@ use wasm_cookies as cookies;
 use web_sys::HtmlTextAreaElement;
 use yew::prelude::*;
 
-pub type QuestionResult = Result<QuestionStruct, gloo_net::Error>;
+pub type QuestionResult = Result<QuestionModel, gloo_net::Error>;
 
 struct App {
     cookie: String,
@@ -30,7 +30,7 @@ pub enum Msg {
 
 impl App {
     fn refresh_question(ctx: &Context<Self>, key: Option<String>) {
-        let got_question = QuestionStruct::get_question(key);
+        let got_question = QuestionModel::get_question(key);
         ctx.link().send_future(got_question);
     }
 }
