@@ -26,7 +26,7 @@ started in this folder, first cd into it, then run the following two commands:
     docker compose up --build -d
     sqlx migrate run
 Docker must be installed as well as the sqlx-cli which can be added with cargo: 
-cargo add sqlx-cli. After these have been ran, go ahead and cargo run within this 
+'cargo add sqlx-cli'. After these have been ran, go ahead and cargo run within this 
 directory and then move into the knock-knock-yew directory. 
 
 Once in the knock-knock-yew directory, ensure that trunk is installed to allow the 
