@@ -18,6 +18,7 @@ h1 {
 
 .joke {
     border: 1px solid black;
+    margin-bottom: 20px;
 }
 
 .error {

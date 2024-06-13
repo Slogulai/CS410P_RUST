@@ -23,6 +23,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route("/healthcheck", get(health_check_handler))
         .route("/questions", post(create_question_handler))
         .route("/questions", get(question_list_handler))
+        .route("/question/:id", get(get_question_handler))
         .route(
             "/questions/:id",
             get(get_question_handler)

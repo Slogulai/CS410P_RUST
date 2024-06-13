@@ -142,7 +142,7 @@ pub async fn create_question_handler(
 }
 
 pub async fn get_question_handler(
-    Path(id): Path<uuid::Uuid>,
+    Path(id): Path<i32>,
     State(data): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let query_result = sqlx::query_as!(
@@ -181,7 +181,7 @@ pub async fn get_question_handler(
 }
 
 pub async fn edit_question_handler(
-    Path(id): Path<uuid::Uuid>,
+    Path(id): Path<i32>,
     State(data): State<Arc<AppState>>,
     Json(body): Json<UpdateQuestionSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
@@ -267,7 +267,7 @@ pub async fn edit_question_handler(
 }
 
 pub async fn delete_question_handler(
-    Path(id): Path<uuid::Uuid>,
+    Path(id): Path<i32>,
     State(data): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let query_result = sqlx::query!(r#"DELETE FROM questions WHERE id = ?"#,id.to_string())
