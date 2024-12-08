@@ -44,7 +44,7 @@ changes are made)
 -When working with branches-
 1.) git branch <chris_branch1> 
 2.) git checkout <chris_branch1> 
-3.) ~you can begin editing and making changes~
+3.) you can begin editing and making changes
 4.) git status 
 5.) git add <filenames> 
 6.) git commit -a -m "Reasons for the Commit" (commit all changes and write a reason)
