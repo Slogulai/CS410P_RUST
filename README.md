@@ -36,11 +36,11 @@ functionality of yew and the database.
 
 Hope that this readme was helpful and that you enjoy the layout of the repo!
 
-~~_~_~_~_~_~ HANDY CARGO COMMANDS _~_~_~_~_~_~~
+### HANDY CARGO COMMANDS
 cargo watch -q -c -w src/ -x run (Will watch main.rs for changes and run again when 
 changes are made)
 
-~~_~_~_~_~_~ HANDY GIT COMMANDS _~_~_~_~_~_~~
+### HANDY GIT COMMANDS
 
 -When working with branches-
 1.) git branch <chris_branch1> 
@@ -53,7 +53,7 @@ changes are made)
 8.) git merge <name of branch> 
 9.) git push 
 
-^^Don't forget to use git status often!
+Don't forget to use git status often!
 
 Deleting Branches after merging - optional
 1.) git branch --merged (shows which branches have been merged, safety check)
