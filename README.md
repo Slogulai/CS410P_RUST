@@ -1,24 +1,23 @@
 # Rust Web
-CS410p Rust Web Dev Repo
+# CS410p Rust Web Dev Repo
 
-Christopher Sloggett
-sloggett@pdx.edu
+## Christopher Sloggett
 
-This Repo will include all the work and assignments done by Christopher Sloggett
+## This Repo will include all the work and assignments done by Christopher Sloggett
 
 This Repo contains the code that will be used to access assignments from the class 
 CS410 Rust Web Development. All code subject to grading will be under the main branch. 
 The three other branches are for testing either Bart's code or implementations of my 
 own code. All work that I intend to submit will be merged with main.
 
-List of Branches:
+## List of Branches:
 1.) main - All code that is subject to grading will be here
 2.) bart_branch - All code that is for testing Bart's code
 3.) testing_branch - Branch for testing new implementations
 4.) testing_branch2 - Another branch for testing other implementations
 5.) in_mem_branch - Branch for saving the work of the in memory database
 
-THIS PROGRAM WILL NOT COMPILE WITHOUT A SQL DOCKER IMAGE
+## THIS PROGRAM WILL NOT COMPILE WITHOUT A SQL DOCKER IMAGE
 
 This repo consists of two folders, knock-knock-yew and rust-web-axum. rust-web-axum 
 is the docker server I have worked on over this term, spring 2024. To get a database 
